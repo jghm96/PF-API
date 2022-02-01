@@ -4,10 +4,15 @@ const { DataTypes } = require('sequelize');
 module.exports = (sequelize) => {
   // defino el modelo holasssssss
   // comentario
-  sequelize.define('character', {
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false,
+  sequelize.define('transaction', {
+    withdraw:{
+        type: DataTypes.INTEGER,
+        default:0
     },
+    deposit:{
+      type: DataTypes.INTEGER,
+      default:0
+  },
+    
   });
 };
