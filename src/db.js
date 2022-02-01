@@ -34,20 +34,25 @@ const { Order,Pair,Susbcription,Symbol,Transaction,User} = sequelize.models;
 
 // Aca vendrian las relaciones
 // Product.hasMany(Reviews);
- User.hasMany(Susbcription);
- Susbcription.belongsTo(User);
- User.hasMany(Transaction);
- Transaction.belongsTo(User);
- User.hasMany(Order);
- Order.belongsTo(User);
- Pair.hasMany(Susbcription);
- Susbcription.belongsTo(Pair);
- Symbol.belongsToMany(Pair,{ through: 'symbolspair' });
- Pair.belongsToMany(Symbol,{ through: 'symbolspair' });
- Order.belongsToMany(Symbol,{ through: 'orderssymbol' });
- Symbol.belongsToMany(Order,{ through: 'orderssymbol' });
- Transaction.belongsToMany(Symbol,{ through: 'transactionssymbol' });
- Symbol.belongsToMany(Transaction,{ through: 'transactionssymbol' });
+User.hasMany(Susbcription,{foreignKey:"userId"});
+Susbcription.belongsTo(User);
+Pair.hasMany(Susbcription,{foreignKey:"pairId"});
+Susbcription.belongsTo(Pair);
+
+User.hasMany(Order,{foreignKey:"userId"});
+Order.belongsTo(User);
+Symbol.hasMany(Order,{foreignKey:"symbolId"});
+Order.belongsTo(Symbol);
+
+User.hasMany(Transaction,{foreignKey:"userId"});
+Transaction.belongsTo(User);
+//falta foreign key symbol to sell y symbol to buy
+Symbol.hasMany(Transaction,{foreignKey:"symbolId"});
+Transaction.belongsTo(Symbol);
+
+Symbol.hasMany(Pair);
+Pair.belongsTo(Symbol);
+ 
 module.exports = {
   ...sequelize.models, // para poder importar los modelos así: const { Product, User } = require('./db.js');
   conn: sequelize,     // para importart la conexión { conn } = require('./db.js');
