@@ -22,13 +22,13 @@ module.exports = (sequelize) => {
     },
     balance: {
       type: DataTypes.INTEGER,
-     allowNull: false,
+      default:0
     },
-    userType: {
+    /*userType: {
       type: DataTypes.STRING,
     },
     mobile: {
         type: DataTypes.STRING,
-    },
+    },*/
   });
 };
