@@ -7,11 +7,11 @@ module.exports = (sequelize) => {
   sequelize.define('transaction', {
     withdraw:{
         type: DataTypes.INTEGER,
-        default:0
+        defaultValue:0
     },
     deposit:{
       type: DataTypes.INTEGER,
-      default:0
+      defaultValue:0
   },
     
   });

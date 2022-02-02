@@ -46,7 +46,6 @@ Order.belongsTo(Symbol);
 
 User.hasMany(Transaction,{foreignKey:"userId"});
 Transaction.belongsTo(User);
-//falta foreign key symbol to sell y symbol to buy
 Symbol.hasMany(Transaction,{foreignKey:"symbolId"});
 Transaction.belongsTo(Symbol);
 

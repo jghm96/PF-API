@@ -3,8 +3,12 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const routes = require('./routes/index.js');
-
+const passport = require('passport');
+const session = require('express-session')
+const {SECRET_SESSION,} = process.env;
 require('./db.js');
+require('./Passport/index.js');
+
 
 const server = express();
 
@@ -22,6 +26,14 @@ server.use((req, res, next) => {
   next();
 });
 
+server.use(session({
+  secret: SECRET_SESSION,
+  resave:true,
+  saveUninitialized:true
+}))
+server.use(passport.initialize());
+server.use(passport.session());
+
 server.use('/', routes);
 
 // Error catching endware.
@@ -31,5 +43,6 @@ server.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
   console.error(err);
   res.status(status).send(message);
 });
+
 
 module.exports = server;

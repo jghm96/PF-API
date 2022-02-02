@@ -5,7 +5,7 @@ module.exports = (sequelize) => {
   sequelize.define('susbcription', {
     alertOnRise:{
         type: DataTypes.BOOLEAN,
-        default:false,
+        defaultValue:false,
     },
     risePrice:{
         type: DataTypes.INTEGER,
@@ -13,7 +13,7 @@ module.exports = (sequelize) => {
     },
     alertOnFall:{
         type: DataTypes.BOOLEAN,
-        default:false,
+        defaultValue:false,
     },
     fallPrice:{
         type: DataTypes.INTEGER,

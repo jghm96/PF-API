@@ -20,15 +20,9 @@ module.exports = (sequelize) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    balance: {
-      type: DataTypes.INTEGER,
-     allowNull: false,
-    },
-    userType: {
-      type: DataTypes.STRING,
-    },
+    /*
     mobile: {
         type: DataTypes.STRING,
-    },
+    },*/
   });
 };
