@@ -20,13 +20,7 @@ module.exports = (sequelize) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    balance: {
-      type: DataTypes.INTEGER,
-      default:0
-    },
-    /*userType: {
-      type: DataTypes.STRING,
-    },
+    /*
     mobile: {
         type: DataTypes.STRING,
     },*/

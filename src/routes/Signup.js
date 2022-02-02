@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const uuid = require('uuid');
 const bcrypt = require("bcrypt");
-const {User} = require('../db');
+const {User,Transaction,Symbol} = require('../db');
 
 const signUp = Router();
 
@@ -13,7 +13,7 @@ signUp.post("/", async (req, res) => {
         await User.create({id,username,password: cryptPassword,email});
         res.status(201).json({succes:"user create"});
     }catch(e){
-       
+       console.log(e);
        res.status(401).json(e);
     }
 });

@@ -1,7 +1,12 @@
 const { Router } = require('express');
-const login = require('./Login.js')
-const signUp = require('./SignUp.js')
-const cryptos = require('./Cryptos.js')
+const login = require('./Login.js');
+const signUp = require('./SignUp.js');
+const cryptos = require('./Cryptos.js');
+const transaction = require('./Transaction.js');
+const million = require('./MillionGift.js');
+const addSymbols = require("../AddSymbols.js");
+let emptySymbols=true;
+
 // Importar todos los routers;
 // Ejemplo: const authRouter = require('./auth.js');
 
@@ -11,6 +16,14 @@ const router = Router();
 router.use("/signup",signUp);
 router.use("/login",login);
 router.use("/cryptos",cryptos);
+router.use("/transaction",transaction);
+router.use("/million",million);
+
+if(emptySymbols){
+    addSymbols();
+    emptySymbols = false;
+}
+  
 
 // Configurar los routers
 // Ejemplo: router.use('/auth', authRouter);
