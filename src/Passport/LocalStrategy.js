@@ -7,7 +7,7 @@ const { Op } = require("sequelize");
 passport.use('local', new localStrategy({
     usernameField:'username',
     passwordField:'password'
-}, async (req,username,password,done) => {
+}, async (username,password,done) => {
    let user =  await User.findOne({
         where:{
          [Op.or]:[{username:username},{email:username}]
