@@ -9,10 +9,10 @@ user.get('/email', isAuthenticated, async (req, res) => {
   try{
     await transporter.sendMail({
       from: '"Crypto" <cryptohenryp@gmail.com>',
-      to: req.user.email,
-      subject:"Mensaje de prueba",
+      to: req.user.email, //email del usuario que esta loggeado
+      subject:"Mensaje de prueba", // Subject del correo
       //text: "Prueba de correo",
-      html: `<h1>Hola</h1>`,
+      html: `<h1>Hola</h1>`, //Codigo hmtl que quieres que se muestre en el correo
     })
     res.json({message: 'Email send'})
   }catch(e){
