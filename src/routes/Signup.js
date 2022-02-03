@@ -10,14 +10,13 @@ signUp.post("/", async (req, res) => {
     const {username, password,email} = req.body;
     try{
         let cryptPassword = await bcrypt.hash(password,10);
-        await User.create({id,username,password: cryptPassword,email,balance: 10000});
+        await User.create({id,username,password: cryptPassword,email});
         res.status(201).json({succes:"user create"});
     }catch(e){
-       
+       console.log(e);
        res.status(401).json(e);
     }
 });
-
 
 module.exports = signUp;
 

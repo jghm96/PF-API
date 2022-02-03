@@ -1,25 +1,27 @@
 const { Router } = require('express');
-// Importar todos los routers;
-// Ejemplo: const authRouter = require('./auth.js');
+
 const subs = require('./Subscription')
-const login = require('./Login')
-const signup = require('./Signup')
-const addSymbols = require('../AddSymbols')
-let emptySymbols = true
-
-const router = Router();
-
-// Configurar los routers
-// Ejemplo: router.use('/auth', authRouter);
-router.use('/signup', signup)
-router.use('/login', login)
-router.use('/subs', subs)
+const login = require('./Login.js');
+const signUp = require('./Signup.js');
+const cryptos = require('./Cryptos.js');
+const million = require('./MillionGift.js');
+const addSymbols = require("../AddSymbols.js");
+let emptySymbols=true;
 
 if(emptySymbols){
     addSymbols();
     emptySymbols = false;
 }
+  
+const router = Router();
 
+
+
+router.use("/signup",signUp);
+router.use("/login",login);
+router.use("/cryptos",cryptos);
+router.use("/million",million);
+router.use('/subs', subs)
 
 router.get("/logout",(req,res) => {
     req.logout();

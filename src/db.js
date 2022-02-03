@@ -3,12 +3,19 @@ const { Sequelize } = require('sequelize');
 const fs = require('fs');
 const path = require('path');
 const {
-  DB_USER, DB_PASSWORD, DB_HOST,
+ DATABASE_URL
 } = process.env;
 
-const sequelize = new Sequelize(`${process.env.DATABASE_URL}`, {
+
+const sequelize = new Sequelize(DATABASE_URL, {
   logging: false, // set to console.log to see the raw SQL queries
   native: false, // lets Sequelize know we can use pg-native for ~30% more speed
+  // dialectOptions:{
+  //   ssl:{
+  //     require:true,
+  //     rejectUnauthorized:false
+  //   }
+  // }
 });
 const basename = path.basename(__filename);
 
@@ -28,8 +35,10 @@ let entries = Object.entries(sequelize.models);
 let capsEntries = entries.map((entry) => [entry[0][0].toUpperCase() + entry[0].slice(1), entry[1]]);
 sequelize.models = Object.fromEntries(capsEntries);
 
-const { Order,Pair,Susbcription,Symbol,Transaction,User} = sequelize.models;// En sequelize.models están todos los modelos importados como propiedades
-// Para relacionarlos hacemos un destructuring
+const { Order,Pair,Susbcription,Symbol,Transaction,User} = sequelize.models;
+
+// Aca vendrian las relaciones
+// Product.hasMany(Reviews);
 User.hasMany(Susbcription,{foreignKey:"userId"});
 Susbcription.belongsTo(User);
 Pair.hasMany(Susbcription,{foreignKey:"pairId"});
@@ -47,9 +56,7 @@ Transaction.belongsTo(Symbol);
 
 Symbol.belongsToMany(Pair, {through: 'symbol-pair'});
 Pair.belongsToMany(Symbol,  {through: 'symbol-pair'});
-// Aca vendrian las relaciones
-// Product.hasMany(Reviews);
-
+ 
 module.exports = {
   ...sequelize.models, // para poder importar los modelos así: const { Product, User } = require('./db.js');
   conn: sequelize,     // para importart la conexión { conn } = require('./db.js');
