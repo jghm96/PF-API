@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const login = require('./Login.js');
-const signUp = require('./SignUp.js');
+const signUp = require('./Signup.js');
 const cryptos = require('./Cryptos.js');
 const million = require('./MillionGift.js');
 const addSymbols = require("../AddSymbols.js");
