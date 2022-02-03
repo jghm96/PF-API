@@ -24,4 +24,6 @@ const addDataInDb = async  (criptos) => {
   }
 }
 
+
 module.exports = addSymbols;
+

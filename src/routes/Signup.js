@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const uuid = require('uuid');
 const bcrypt = require("bcrypt");
-const {User,Transaction,Symbol} = require('../db');
+const {User} = require('../db');
 
 const signUp = Router();
 
@@ -18,5 +18,5 @@ signUp.post("/", async (req, res) => {
     }
 });
 
-
 module.exports = signUp;
+

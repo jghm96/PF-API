@@ -3,11 +3,13 @@ const passport = require('passport');
 
 const login = Router();
 
+
 login.post('/',passport.authenticate('local',{
     successRedirect:"/login/success",
     failureRedirect: "/login/error",
     failureMessage:true
 }))
+
 
 login.get("/google", passport.authenticate("google",{scope:["profile","email"]}));
 
@@ -27,4 +29,6 @@ login.get('/error',(req,res) => {
 
 
 
+
 module.exports = login;
+

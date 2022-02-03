@@ -14,7 +14,7 @@ module.exports = (sequelize) => {
       primaryKey:true
     }, */
     price: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.DOUBLE,
       allowNull: false,
     },
     pair: {

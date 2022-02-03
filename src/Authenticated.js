@@ -5,4 +5,6 @@ const isAuthenticated = (req,res,next) => {
      res.json({error:"there is not session"});
 }
 
+
 module.exports = isAuthenticated;
+

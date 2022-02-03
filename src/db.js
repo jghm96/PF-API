@@ -6,6 +6,7 @@ const {
  DATABASE_URL
 } = process.env;
 
+
 const sequelize = new Sequelize(DATABASE_URL, {
   logging: false, // set to console.log to see the raw SQL queries
   native: false, // lets Sequelize know we can use pg-native for ~30% more speed
@@ -34,8 +35,6 @@ let entries = Object.entries(sequelize.models);
 let capsEntries = entries.map((entry) => [entry[0][0].toUpperCase() + entry[0].slice(1), entry[1]]);
 sequelize.models = Object.fromEntries(capsEntries);
 
-// En sequelize.models están todos los modelos importados como propiedades
-// Para relacionarlos hacemos un destructuring
 const { Order,Pair,Susbcription,Symbol,Transaction,User} = sequelize.models;
 
 // Aca vendrian las relaciones
@@ -55,8 +54,8 @@ Transaction.belongsTo(User);
 Symbol.hasMany(Transaction,{foreignKey:"symbolId"});
 Transaction.belongsTo(Symbol);
 
-Symbol.hasMany(Pair);
-Pair.belongsTo(Symbol);
+Symbol.belongsToMany(Pair, {through: 'symbol-pair'});
+Pair.belongsToMany(Symbol,  {through: 'symbol-pair'});
  
 module.exports = {
   ...sequelize.models, // para poder importar los modelos así: const { Product, User } = require('./db.js');
