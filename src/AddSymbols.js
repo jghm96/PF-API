@@ -12,7 +12,6 @@ const addSymbols = async () => {
 }
 
 const addDataInDb = async  (criptos) => {
-    
   for(let i = 0; i < criptos.length; i++){
         await Symbol.findOrCreate({
             where:{
