@@ -10,9 +10,8 @@ rSubscription.get('/', isAuthenticated ,async (req, res) => {
     console.log(req.user.username)
     const user = req.user.username 
     const subscriptions = await User.findAll({
-
       where:{
-        username: req.user.username
+        username: user
       },
       attributes: ['username', 'email', 'balance'],
       include: Susbcription
@@ -27,7 +26,7 @@ rSubscription.get('/', isAuthenticated ,async (req, res) => {
 })
 
 rSubscription.post('/subscribe', isAuthenticated ,async (req, res) => { //Ruta para subscripcion a cryptos que existan en la BD
-  let {symbols, priceRise, priceFall } = req.body
+  let {symbols, risePrice, fallPrice } = req.body
   
   try{
     if(req.user){
@@ -36,7 +35,7 @@ rSubscription.post('/subscribe', isAuthenticated ,async (req, res) => { //Ruta p
           username: req.user.username
         }
       })
-      if(!userBd) return res.json({msg: 'No existe el usuario'})
+      if(!userBd) return res.json({msg: 'User does not exists on BD'})
       
       const pair = symbols[0].toUpperCase() + symbols[1].toUpperCase()
 
@@ -44,7 +43,7 @@ rSubscription.post('/subscribe', isAuthenticated ,async (req, res) => { //Ruta p
       const pairApi= response.data
       const existence = pairApi.filter(c => c.symbol === pair)
       
-      if(!existence.length) return res.status(404).json({message : 'Pair no valido'})
+      if(!existence.length) return res.status(404).json({message : 'Invalid Pair'})
       
       const symbolsDb = await Symbol.findAll({
         where: {
@@ -71,18 +70,18 @@ rSubscription.post('/subscribe', isAuthenticated ,async (req, res) => { //Ruta p
           pairId : pairDb.toJSON().id
         },
         defaults :{
-          fallPrice: priceFall || 0,
-          risePrice: priceRise || 0,
-          alertOnRise: priceRise ? true : false,
-          alertOnFall: priceFall ? true : false    
+          fallPrice: fallPrice || 0,
+          risePrice: risePrice || 0,
+          alertOnRise: risePrice ? true : false,
+          alertOnFall: fallPrice ? true : false    
         }
       }) 
-      if(!createds) return res.json({message : 'Subscription has been done earlier'})
+      if(!createds) return res.json({message : 'Subscription exists already'})
       await subscription.setUser(userBd[0])
       await subscription.setPair(pairDb)
       res.json({msg : 'Subscription done'})
     }else{
-      res.status(404).json({msg : 'Error de usuario'})
+      res.status(404).json({msg : 'User error'})
     }
   }catch(err){
     res.status(500).json(err)
@@ -96,14 +95,14 @@ rSubscription.delete('/unsubscribe', isAuthenticated,async (req, res) => { //Rut
     const pair = symbols[0].toUpperCase() + symbols[1].toUpperCase()
   const userDb = await User.findOne({where: {username: req.user.username}}) //buscar usuario en BD
   const pairDb = await Pair.findOne({where: {pair: pair}}) // buscar Pair en BD
-  if(!pairDb) return res.status(404).json({msg: 'No existe el pair'})
+  if(!pairDb) return res.status(404).json({msg: 'Pair does not exists'})
   const unsubscription = await Susbcription.destroy({
     where: {
       userId: userDb.dataValues.id,
       pairId: pairDb.dataValues.id
     }
   })
-  if(!unsubscription) return res.json({msg: 'No existe la suscripcion'}) 
+  if(!unsubscription) return res.json({msg: 'Subscription does not exists for this user'}) 
   res.json(unsubscription)
   }catch(err){
     res.status(500).json(err)
