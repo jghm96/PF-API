@@ -13,7 +13,7 @@ rSubscription.get('/', isAuthenticated ,async (req, res) => {
       where:{
         username: user
       },
-      attributes: ['username', 'email', 'balance'],
+      attributes: ['username', 'email'],
       include: Susbcription
     })
     console.log(subscriptions)
