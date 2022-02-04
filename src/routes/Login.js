@@ -7,7 +7,6 @@ const login = Router();
 login.post('/',passport.authenticate('local',{
     successRedirect:"/login/success",
     failureRedirect: "/login/error",
-    failureMessage:true
 }))
 
 
@@ -20,11 +19,11 @@ login.get("/googlecallback", passport.authenticate("google",{
 }));
 
 login.get('/success',(req,res) => {
-    res.json({success:"user is login"});
+    res.json({isAuthenticated:true,username:req.user.name});
 });
 
 login.get('/error',(req,res) => {
-    res.json({error:req.session.messages[0]})
+    res.status(490).json({isAuthenticated:false,username:""})
 });
 
 
