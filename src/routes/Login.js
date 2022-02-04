@@ -4,10 +4,9 @@ const passport = require('passport');
 const login = Router();
 
 
-login.post('/',passport.authenticate('local',{
-    successRedirect:"/login/success",
-    failureRedirect: "/login/error",
-}))
+login.post('/',passport.authenticate('local'), (req, res) => {
+    res.json({isAuthenticated:true,username:req.user.name})
+})
 
 
 login.get("/google", passport.authenticate("google",{scope:["profile","email"]}));
