@@ -14,10 +14,10 @@ passport.use('local', new localStrategy({
         }
     });
    if(!user)
-    return done(null,false,{message:"usuario o email incorrecto"});
+    return done(null,false);
    else{
        if(!await bcrypt.compare(password,user.password))
-         return done(null,false,{message:"contraseña incorrecta"})
+         return done(null,false)
    }
    return done(null,user);
 }))
