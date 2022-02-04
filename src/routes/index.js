@@ -5,6 +5,7 @@ const cryptos = require('./Cryptos.js');
 const million = require('./MillionGift.js');
 const addSymbols = require("../AddSymbols.js");
 const user = require('./user');
+const transactions = require('./Transaction');
 let emptySymbols=true;
 
 if(emptySymbols){
@@ -13,7 +14,6 @@ if(emptySymbols){
 }
   
 const router = Router();
-
 router.use("/signup",signUp);
 router.use("/login",login);
 router.use("/cryptos",cryptos);
@@ -23,6 +23,8 @@ router.get("/logout",(req,res) => {
     req.logout();
     req.session.destroy();
     res.json({status:"session finished"})
-})
+});
+router.use('/buy',transactions);
+
 
 module.exports = router;
