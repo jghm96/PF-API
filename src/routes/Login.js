@@ -26,3 +26,4 @@ login.get('/error',(req,res) => {
     res.status(490).json({isAuthenticated:false,username:""})
 });
 
+module.exports = login
