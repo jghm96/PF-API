@@ -11,13 +11,13 @@ login.post('/',passport.authenticate('local',{
 }))
 
 
-/*login.get("/google", passport.authenticate("google",{scope:["profile","email"]}));
+login.get("/google", passport.authenticate("google",{scope:["profile","email"]}));
 
 login.get("/googlecallback", passport.authenticate("google",{
     successRedirect:'/login/success',
     failureRedirect:'/login/error',
 
-}));*/
+}));
 
 login.get('/success',(req,res) => {
     res.json({success:"user is login"});
