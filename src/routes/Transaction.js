@@ -3,7 +3,7 @@ const {Transaction,Symbol,User} = require("../db");
 const transactions = Router();
 const isAuthenticated = require("../Authenticated");
 
-transactions.get("/buy",isAuthenticated,async(req,res) => {
+transactions.post("/buy",isAuthenticated,async(req,res) => {
 
     const {symbol,deposit,whitdraw,userId} = req.params;
 
