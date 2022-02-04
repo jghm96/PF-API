@@ -1,5 +1,5 @@
 const passport = require('passport');
-require("./GoogleStrategy.js");
+//require("./GoogleStrategy.js");
 require("./LocalStrategy.js");
 
 
