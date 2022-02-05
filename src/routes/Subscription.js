@@ -11,10 +11,23 @@ rSubscription.get('/', isAuthenticated ,async (req, res) => {
       where:{
         userId: req.user.id
       },
-      include: Pair
+      include: [{model:Pair, required: true, attributes: ['id','price', 'pair'], include: Symbol}]
+    })
+    console.log(subscriptions)
+    const format = subscriptions.map(s => s.toJSON()).map(s => {
+      return {
+        id: s.id,
+        risePrice: s.risePrice,
+        fallPrice: s.fallPrice,
+        alertOnRise: s.alertOnRise,
+        alertOnFall: s.alertOnFall,
+        pair: [s.pair.pair, s.pair.price],
+        symbol1: [s.pair.symbols[1].symbol, s.pair.symbols[1].image],
+        symbol2: [s.pair.symbols[0].symbol, s.pair.symbols[0].image]
+      }
     })
 
-    res.json(subscriptions)
+    res.json(format)
   
   }catch(err){
     res.status(500).json(err)
@@ -27,10 +40,24 @@ rSubscription.get('/:id', isAuthenticated,async (req, res) => {
        where: {
         userId : req.user.id,
          id: req.params.id
-      }
+      },
+      include: [{model:Pair, required: true, attributes: ['id','price', 'pair'], include: Symbol}]
     });
+    subscription = subscription.toJSON()
+    const format = {
+      id: subscription.id,
+      risePrice: subscription.risePrice,
+      fallPrice: subscription.fallPrice,
+      alertOnRise: subscription.alertOnRise,
+      alertOnFall: subscription.alertOnFall,
+      pair: [subscription.pair.pair, subscription.pair.price],
+      symbol1: [subscription.pair.symbols[1].symbol, subscription.pair.symbols[1].image],
+      symbol2: [subscription.pair.symbols[0].symbol, subscription.pair.symbols[0].image]
+
+
+    }
 //    if(!subscription) return res.satus(404).json({message: 'Subscription dont find'})
-    res.json(subscription)
+    res.json(format)
   }catch(err){
     res.status(500).json(err)
   }
@@ -159,7 +186,7 @@ rSubscription.delete('/:id', isAuthenticated,async (req, res) => { //Ruta para d
       }
     })
     if(!unsubscription) return res.json({msg: 'Subscription does not exists for this user'}) 
-    res.json(unsubscription)
+    res.json({message : 'Subscription eliminated'})
   }catch(err){
     res.status(500).json(err)
   }
