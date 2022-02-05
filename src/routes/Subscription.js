@@ -13,8 +13,10 @@ rSubscription.get('/', isAuthenticated ,async (req, res) => {
       },
       include: [{model:Pair, required: true, attributes: ['id','price', 'pair'], include: Symbol}]
     })
-    console.log(subscriptions)
-    const format = subscriptions.map(s => s.toJSON()).map(s => {
+    let json = subscriptions.map(s => s.toJSON())
+    console.log(json)
+    const format = json.map(s => {
+      console.log(s.pair.symbols)
       return {
         id: s.id,
         risePrice: s.risePrice,
@@ -26,6 +28,7 @@ rSubscription.get('/', isAuthenticated ,async (req, res) => {
         symbol2: [s.pair.symbols[0].symbol, s.pair.symbols[0].image]
       }
     })
+    console.log(format)
 
     res.json(format)
   
@@ -50,12 +53,10 @@ rSubscription.get('/:id', isAuthenticated,async (req, res) => {
       fallPrice: subscription.fallPrice,
       alertOnRise: subscription.alertOnRise,
       alertOnFall: subscription.alertOnFall,
-      pair: [subscription.pair.pair, subscription.pair.price],
-      symbol1: [subscription.pair.symbols[1].symbol, subscription.pair.symbols[1].image],
-      symbol2: [subscription.pair.symbols[0].symbol, subscription.pair.symbols[0].image]
-
-
+      symbol1Id: subscription.pair.symbols[1].id,
+      symbol2Id: subscription.pair.symbols[0].id
     }
+    console.log(format)
 //    if(!subscription) return res.satus(404).json({message: 'Subscription dont find'})
     res.json(format)
   }catch(err){
@@ -76,7 +77,8 @@ rSubscription.post('/', isAuthenticated ,async (req, res) => { //Ruta para subsc
       if(!userBd) return res.json({msg: 'User does not exists on BD'})
       
       const pair = symbol1.toUpperCase() + symbol2.toUpperCase()
-      const symbols = [symbol1, symbol2]
+      const symbols = [symbol1.toLowerCase(), symbol2.toLowerCase()]
+      console.log(symbols)
       const response = await axios.get('https://api.binance.com/api/v3/ticker/price')
       const pairApi= response.data
       const existence = pairApi.filter(c => c.symbol === pair)
@@ -88,6 +90,7 @@ rSubscription.post('/', isAuthenticated ,async (req, res) => { //Ruta para subsc
           symbol: symbols
         }
       })
+      if(symbolsDb.length < 2) return res.json({message :'Uno de los simbolos no existe'})
 
       const [pairDb, created] = await Pair.findOrCreate({
         where: {
