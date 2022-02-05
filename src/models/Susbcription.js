@@ -8,7 +8,7 @@ module.exports = (sequelize) => {
         default:false,
     },
     risePrice:{
-        type: DataTypes.INTEGER,
+        type: DataTypes.DOUBLE,
         allowNull:false,
     },
     alertOnFall:{
@@ -16,7 +16,7 @@ module.exports = (sequelize) => {
         default:false,
     },
     fallPrice:{
-        type: DataTypes.INTEGER,
+        type: DataTypes.DOUBLE,
         allowNull:false,
     }
     
