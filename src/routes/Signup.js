@@ -2,6 +2,7 @@ const { Router } = require('express');
 const uuid = require('uuid');
 const bcrypt = require("bcrypt");
 const {User} = require('../db');
+const { Op } = require('sequelize')
 
 const signUp = Router();
 
