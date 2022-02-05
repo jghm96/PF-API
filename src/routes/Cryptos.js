@@ -20,7 +20,10 @@ cryptos.get("/:contrapart", async(req,res) => {
                   symbol:cripto.symbol,
                   name:cripto.name,
                   image:cripto.image,
-                  price:cripto.current_price
+                  price:cripto.current_price,
+                  market_cap:cripto.market_cap,
+                  price_change_percentage_24h:cripto.price_change_percentage_24h,
+                  market_cap_change_percentage_24h:cripto.market_cap_change_percentage_24h, 
                   }
             }));
     }catch(e){
