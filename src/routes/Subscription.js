@@ -46,7 +46,10 @@ rSubscription.get('/:id', isAuthenticated,async (req, res) => {
       },
       include: [{model:Pair, required: true, attributes: ['id','price', 'pair'], include: Symbol}]
     });
+    console.log(subscription)
+    if(!subscription) return res.status(404).json({message: 'Subscription dont find'})
     subscription = subscription.toJSON()
+    
     const format = {
       id: subscription.id,
       risePrice: subscription.risePrice,
@@ -57,7 +60,6 @@ rSubscription.get('/:id', isAuthenticated,async (req, res) => {
       symbol2Id: subscription.pair.symbols[0].id
     }
     console.log(format)
-//    if(!subscription) return res.satus(404).json({message: 'Subscription dont find'})
     res.json(format)
   }catch(err){
     res.status(500).json(err)
@@ -74,11 +76,10 @@ rSubscription.post('/', isAuthenticated ,async (req, res) => { //Ruta para subsc
           username: req.user.username
         }
       })
-      if(!userBd) return res.json({msg: 'User does not exists on BD'})
+      if(!userBd) return res.status(404).json({msg: 'User does not exists on BD'})
       
       const pair = symbol1.toUpperCase() + symbol2.toUpperCase()
-      const symbols = [symbol1.toLowerCase(), symbol2.toLowerCase()]
-      console.log(symbols)
+      const symbols = [symbol1, symbol2]
       const response = await axios.get('https://api.binance.com/api/v3/ticker/price')
       const pairApi= response.data
       const existence = pairApi.filter(c => c.symbol === pair)
@@ -90,7 +91,7 @@ rSubscription.post('/', isAuthenticated ,async (req, res) => { //Ruta para subsc
           symbol: symbols
         }
       })
-      if(symbolsDb.length < 2) return res.json({message :'Uno de los simbolos no existe'})
+      if(symbolsDb.length < 2) return res.status(404).json({message :'Uno de los simbolos no existe'})
 
       const [pairDb, created] = await Pair.findOrCreate({
         where: {
@@ -104,7 +105,6 @@ rSubscription.post('/', isAuthenticated ,async (req, res) => { //Ruta para subsc
       if(created){
         await pairDb.addSymbols(symbolsDb)
       }
-      console.log(pairDb.toJSON())
       const [subscription, createds] = await Susbcription.findOrCreate({
         where: {
           userId : req.user.id,
@@ -118,7 +118,7 @@ rSubscription.post('/', isAuthenticated ,async (req, res) => { //Ruta para subsc
  
         }
       }) 
-      if(!createds) return res.json({message : 'Subscription exists already'})
+      if(!createds) return res.status(404).json({message : 'Subscription exists already'})
       await subscription.setUser(userBd[0])
       await subscription.setPair(pairDb)
       res.json(subscription)
@@ -133,8 +133,8 @@ rSubscription.post('/', isAuthenticated ,async (req, res) => { //Ruta para subsc
 
 rSubscription.put('/:id', isAuthenticated, async (req, res) => {
   try {
-    let { pair , risePrice, fallPrice } = req.body
-    //let pair = symbol1.toUpperCase() + symbol2.toUpperCase()
+    let { symbol1, symbol2 , risePrice, fallPrice } = req.body
+    let pair = symbol1.toUpperCase() + symbol2.toUpperCase()
     const response = await axios.get('https://api.binance.com/api/v3/ticker/price')
     const pairApi = response.data
     //console.log(pairApi)
@@ -149,7 +149,6 @@ rSubscription.put('/:id', isAuthenticated, async (req, res) => {
     //}})
     //console.log(pairDb.toJSON())
     //console.log(req.user.id, pairDb.toJSON().id)
-    console.log(req.params.id, req.user.id)
     await Susbcription.update({
       risePrice: risePrice === undefined || risePrice < 0 ? 0 : risePrice,
       fallPrice: fallPrice === undefined || fallPrice < 0 ? 0 : fallPrice,
@@ -167,7 +166,7 @@ rSubscription.put('/:id', isAuthenticated, async (req, res) => {
         id: req.params.id
       }
     })
-
+    if(!updated) return res.status(404).json({message: 'Hubo un error al actualizar'})
     res.json(updated)
     
   }catch(err){
