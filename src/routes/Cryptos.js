@@ -4,7 +4,7 @@ const {Symbol} = require("../db");
 const cryptos = Router();
 
 cryptos.get("/symbols", async (req,res) => {
-    let symbols = ( await Symbol.findAll({attributes: ["id","symbol"]})).sort((a,b) => a.symbol > b.symbol?1: b.symbol > a.symbol ? -1 : 0)
+    let symbols = ( await Symbol.findAll({attributes: ["id","symbol"]}))
    res.json(symbols)
 })
 
