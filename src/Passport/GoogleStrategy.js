@@ -9,7 +9,7 @@ const {
 passport.use('google',new GoogleStrategy({
     clientID:     GOOGLE_CLIENT_ID,
     clientSecret: GOOGLE_CLIENT_SECRET,
-    callbackURL: "https://pfapi2.herokuapp.com/login/googlecallback",
+    callbackURL: "http:localhost:3000/login/googlecallback",
     passReqToCallback: true
   },
    async (request, accessToken, refreshToken, profile, done) => {
