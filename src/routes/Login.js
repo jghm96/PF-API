@@ -12,8 +12,8 @@ login.post('/',passport.authenticate('local'), (req, res) => {
 login.get("/google", passport.authenticate("google",{scope:["profile","email"]}));
 
 login.get("/googlecallback", passport.authenticate("google",{
-    successRedirect:'http://localhost:3000/home/',
-    failureRedirect:'http://localhost:3000/login/error',
+    successRedirect:'http://localhost:3000/',
+    failureRedirect:'http://localhost:3000/signin',
 
 }));
 
