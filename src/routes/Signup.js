@@ -22,13 +22,13 @@ signUp.post("/", async (req, res) => {
             }
         })
         if(findUser || findEmail){
-            findUser && findEmail ? res.status(490).send({error:"username e email existentes"}) :
-                findUser ? res.status(490).json({error: 'username existente'}) :
-                res.status(490).json({error: 'email existente'});
+            findUser && findEmail ? res.status(490).send({message:"username e email existentes"}) :
+                findUser ? res.status(490).json({message: 'username existente'}) :
+                res.status(490).json({message: 'email existente'});
         }
         else{
           await User.create({id,username,password: cryptPassword,email});
-          res.status(201).json({succes:"user create"});
+          res.status(201).json({message:"user create"});
         }
     }catch(e){
        console.log(e);
