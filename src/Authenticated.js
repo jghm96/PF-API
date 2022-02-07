@@ -2,7 +2,7 @@ const isAuthenticated = (req,res,next) => {
     if(req.isAuthenticated())
      next()
      else
-     res.json({error:"there is not session"});
+     res.status(404).json({error:"there is not session"});
 }
 
 
