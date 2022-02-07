@@ -67,7 +67,7 @@ rSubscription.get('/:id', isAuthenticated,async (req, res) => {
 })
 
 rSubscription.post('/', isAuthenticated ,async (req, res) => { //Ruta para subscripcion a cryptos que existan en la BD
-  let {symbol1, symbol2, risePrice, fallPrice } = req.body
+  let {symbol1Id, symbol2Id, risePrice, fallPrice } = req.body
   
   try{
     if(req.user){
@@ -78,20 +78,27 @@ rSubscription.post('/', isAuthenticated ,async (req, res) => { //Ruta para subsc
       })
       if(!userBd) return res.status(404).json({msg: 'User does not exists on BD'})
       
-      const pair = symbol1.toUpperCase() + symbol2.toUpperCase()
-      const symbols = [symbol1, symbol2]
+      const symbol1 = await Symbol.findOne({
+        where: {
+          id: Number(symbol1Id)
+        }
+      })
+      
+      const symbol2 = await Symbol.findOne({
+        where: {
+          id: Number(symbol2Id)
+        }
+      })
+  
+      console.log(symbol1, symbol2)
+      const pair = symbol1.toJSON().symbol.toUpperCase() + symbol2.toJSON().symbol.toUpperCase()
       const response = await axios.get('https://api.binance.com/api/v3/ticker/price')
       const pairApi= response.data
       const existence = pairApi.filter(c => c.symbol === pair)
-      
+      console.log(existence)
       if(!existence.length) return res.status(404).json({message : 'Invalid Pair'})
       
-      const symbolsDb = await Symbol.findAll({
-        where: {
-          symbol: symbols
-        }
-      })
-      if(symbolsDb.length < 2) return res.status(404).json({message :'Uno de los simbolos no existe'})
+      //if(symbolsDb.length < 2) return res.status(404).json({message :'Uno de los simbolos no existe'})
 
       const [pairDb, created] = await Pair.findOrCreate({
         where: {
@@ -103,6 +110,7 @@ rSubscription.post('/', isAuthenticated ,async (req, res) => { //Ruta para subsc
       })
       
       if(created){
+        const symbolsDb= [symbol1, symbol2]
         await pairDb.addSymbols(symbolsDb)
       }
       const [subscription, createds] = await Susbcription.findOrCreate({
@@ -133,8 +141,11 @@ rSubscription.post('/', isAuthenticated ,async (req, res) => { //Ruta para subsc
 
 rSubscription.put('/:id', isAuthenticated, async (req, res) => {
   try {
-    let { symbol1, symbol2 , risePrice, fallPrice } = req.body
-    let pair = symbol1.toUpperCase() + symbol2.toUpperCase()
+    let { symbol1Id, symbol2Id , risePrice, fallPrice } = req.body
+    const symbol1 = await Symbol.findByPk(Number(symbol1Id))
+    const symbol2 = await Symbol.findByPk(Number(symbol2Id))
+    if(!symbol1 || !symbol2 ) return res.status(404).json({message: 'Uno de los simbolos no existe en la BD'})
+    let pair = symbol1.toJSON().symbol.toUpperCase() + symbol2.toJSON().symbol.toUpperCase()
     const response = await axios.get('https://api.binance.com/api/v3/ticker/price')
     const pairApi = response.data
     //console.log(pairApi)
