@@ -11,13 +11,21 @@ signUp.post("/", async (req, res) => {
     const {username, password,email} = req.body;
     try{
         let cryptPassword = await bcrypt.hash(password,10);
-        const find = await User.findOne({
+        const findUser = await User.findOne({
             where:{
-                [Op.or]:[{username},{email}]
+                username
             }
         })
-        if(find)
-          res.status(490).send({error:"username o email existentes"});
+        const findEmail = await User.findOne({
+            where: {
+                email
+            }
+        })
+        if(findUser || findEmail){
+            findUser && findEmail ? res.status(490).send({error:"username e email existentes"}) :
+                findUser ? res.status(490).json({error: 'username existente'}) :
+                res.status(490).json({error: 'email existente'});
+        }
         else{
           await User.create({id,username,password: cryptPassword,email});
           res.status(201).json({succes:"user create"});
@@ -27,6 +35,17 @@ signUp.post("/", async (req, res) => {
        res.status(401).json(e);
     }
 });
+
+signUp.get('/users', async (req, res) => {
+    try{
+        const find = await User.findAll({
+            attributes: ['username', 'email']
+        })
+        res.json(find)
+    }catch(err){
+        res.status(500).json(err)
+    }
+})
 
 
 module.exports = signUp;
