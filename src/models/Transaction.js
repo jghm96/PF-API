@@ -5,11 +5,11 @@ module.exports = (sequelize) => {
   // defino el modelo holasssssss
   // comentario
   sequelize.define('transaction', {
-    withdraw:{
-        type: DataTypes.INTEGER,
-        defaultValue:0
+    type:{
+        type: DataTypes.ENUM(["deposit","withdraw"]),
+        allowNull: false,
     },
-    deposit:{
+    amount:{
       type: DataTypes.INTEGER,
       defaultValue:0
   },
