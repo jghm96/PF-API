@@ -18,5 +18,45 @@ transactions.post("/buy",isAuthenticated,async(req,res) => {
     res.json({message:"Transaction completed successfully."});
 });
 
+transactions.get("/state-account",isAuthenticated,async(req,res) => {
+    const {userId} = req.params;
+    const results = Transaction.findAll({
+        where:{ userId},
+        attributes:["id","deposit","withdraw"],
+        include:{
+            model:Symbol,
+            attributes:["symbol"]
+        }
+    });
+    var h={};
+    // All transactions
+    h.allTransactions = results.map(t=>{
+        return{
+            'id':t.id,
+            'amount':t.deposit!==0?t.deposit:-t.withdraw,
+            'symbol':t.symbol.symbol
+        }
+    })
+    // Historical by symbol
+    var historicalBySymbol = {};
+    h.allTransactions.forEach(t => {
+        historicalBySymbol = {
+            ...historicalBySymbol,
+            [t.symbol]: historicalBySymbol[t.symbol] ? [...historicalBySymbol[t.symbol], t.amount] : [t.amount]
+        }
+    });
+    h.historicalBySymbol = historicalBySymbol;
+    // current balance
+    var currentBalance = {}
+    let keys = Object.keys(historicalBySymbol);
+    keys.forEach(k => {
+        currentBalance = {
+            ...currentBalance,
+            [k] : historicalBySymbol[k].reduce((a, b) => a + b, 0)
+        }
+    });
+    h.currentBalance = currentBalance;
+    res.json(h);
+});
 
 module.exports = transactions;
