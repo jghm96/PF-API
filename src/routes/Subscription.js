@@ -1,12 +1,14 @@
 const express = require('express')
 const rSubscription = express.Router()
 const { Symbol, User, Pair, Susbcription } = require('../db')
-const isAuthenticated = require('../Authenticated')
+const { isAuthenticated } = require('../JWT/JSONWT')
 const transporter = require('../Mail')
 const axios = require('axios')
 
+
 rSubscription.get('/', isAuthenticated ,async (req, res) => {
   try{
+    console.log(req.user)
     const subscriptions = await Susbcription.findAll({
       where:{
         userId: req.user.id
