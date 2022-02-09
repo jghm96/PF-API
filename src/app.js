@@ -40,7 +40,7 @@ server.use(passport.session());
 
 server.use('/', routes);
 
-require(`./Temporizador`)
+//require(`./Temporizador`)
 
 // Error catching endware.
 server.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
