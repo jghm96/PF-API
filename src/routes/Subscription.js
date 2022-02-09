@@ -24,8 +24,8 @@ rSubscription.get('/', isAuthenticated ,async (req, res) => {
         alertOnRise: s.alertOnRise,
         alertOnFall: s.alertOnFall,
         pair: [s.pair.pair, s.pair.price],
-        symbol1: [s.pair.symbols[1].symbol, s.pair.symbols[1].image],
-        symbol2: [s.pair.symbols[0].symbol, s.pair.symbols[0].image]
+        symbol1: [s.pair.symbols[0].symbol, s.pair.symbols[0].image],
+        symbol2: [s.pair.symbols[1].symbol, s.pair.symbols[1].image]
       }
     })
     res.json(format)
@@ -65,7 +65,8 @@ rSubscription.get('/:id', isAuthenticated,async (req, res) => {
 rSubscription.post('/', isAuthenticated ,async (req, res) => { //Ruta para subscripcion a cryptos que existan en la BD
   let {symbol1Id, symbol2Id, risePrice, fallPrice } = req.body
   
-  try{      
+  try{  
+      const user = await User.findByPk(req.user.id)
       const symbol1 = await Symbol.findOne({
         where: {
           id: Number(symbol1Id)
@@ -114,7 +115,7 @@ rSubscription.post('/', isAuthenticated ,async (req, res) => { //Ruta para subsc
         }
       }) 
     if(!createds) return res.status(404).json({errorType:'subscriptionError', errorCode:'1230',errorMessage : 'Subscription already exists'})
-      await subscription.setUser(userBd[0])
+      await subscription.setUser(user)
       await subscription.setPair(pairDb)
       res.json(subscription)
     }catch(err){
