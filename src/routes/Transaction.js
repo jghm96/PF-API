@@ -7,11 +7,22 @@ const { axios } = require('axios');
 transactions.post("/buy", isAuthenticated, async (req, res) => { // Permite crear una nueva transaccion
 
     try {
-        const { symbol, deposit, whitdraw } = req.params;
+        const { symbolToBuy,symbolToSell, deposit, whitdraw } = req.params;
 
-        let amountAndType = await Transaction.create({ deposit: deposit, withdraw: whitdraw });
+        // To Sell
+        let amountAndType_Sell = await Transaction.create({ deposit: 0, withdraw: whitdraw });
 
-        let purchasedSymbol = await Symbol.findOne({ where: { symbol: symbol } });
+        let purchasedSymbol_Sell = await Symbol.findOne({ where: { symbol: symbolToSell } });
+        let sell = await User.findByPk(req.user.id);
+
+        purchasedSymbol_Sell.addTransaction(amountAndType_Sell);
+        sell.addTransaction(amountAndType_Sell);
+
+
+        // To Buy
+        let amountAndType = await Transaction.create({ deposit: deposit, withdraw: 0 });
+
+        let purchasedSymbol = await Symbol.findOne({ where: { symbol: symbolToBuy } });
         let buyer = await User.findByPk(req.user.id);
 
         purchasedSymbol.addTransaction(amountAndType);
