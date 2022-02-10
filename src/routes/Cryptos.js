@@ -4,7 +4,7 @@ const {Symbol} = require("../db");
 const cryptos = Router();
 
 cryptos.get("/symbols", async (req,res) => {
-    let symbols = ( await Symbol.findAll({attributes: ["id","symbol"]}))
+    let symbols = ( await Symbol.findAll({attributes: ["id","symbol","image"]}))
   if(!symbols) return res.status(404).json({
     errorType:'symbolsError',
     errorCode:'1450',
