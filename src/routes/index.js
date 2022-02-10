@@ -1,6 +1,8 @@
 const { Router } = require('express');
 
 const subs = require('./Subscription')
+//const transaction = require('./Transactions')
+//const order = require('./Order')
 //const user = require('./user')
 const login = require('./LoginJWT');
 const signUp = require('./Signup.js');
@@ -18,7 +20,6 @@ if(emptySymbols){
 const router = Router();
 
 
-
 router.use("/signup",signUp);
 router.use("/login",login);
 router.use("/cryptos",cryptos);
@@ -26,6 +27,8 @@ router.use("/million",million);
 router.use('/subs', subs)
 //router.use('/pair', pair)
 //router.use('/user', user)
+//router.use('/order', order)
+//router.use('/transactions', transaction)
 
 router.get("/logout",(req,res) => {
     req.logout();
