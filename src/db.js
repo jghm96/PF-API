@@ -10,10 +10,10 @@ console.log(DATABASE_URL)
 const sequelize = new Sequelize(DATABASE_URL, {
   logging: false, // set to console.log to see the raw SQL queries
   native: false, // lets Sequelize know we can use pg-native for ~30% more speed
-   dialectOptions:{
-     ssl:{
+  dialectOptions:{
+    ssl:{
        require:true,
-       rejectUnauthorized:false
+      rejectUnauthorized:false
      }
    }
 });
@@ -54,9 +54,12 @@ Transaction.belongsTo(User);
 Symbol.hasMany(Transaction,{foreignKey:"symbolId"});
 Transaction.belongsTo(Symbol);
 
-Symbol.belongsToMany(Pair, {through: 'symbol-pair'});
-Pair.belongsToMany(Symbol,  {through: 'symbol-pair'});
- 
+//Symbol.belongsToMany(Pair, {through: 'symbol-pair'});
+//Pair.belongsToMany(Symbol,  {through: 'symbol-pair'});
+
+Pair.belongsTo(Symbol, {as:'Symbol1', foreignKey:'symbol1Id'})
+Pair.belongsTo(Symbol, {as: 'Symbol2', foreignKey: 'symbol2Id'})
+
 module.exports = {
   ...sequelize.models, // para poder importar los modelos así: const { Product, User } = require('./db.js');
   conn: sequelize,     // para importart la conexión { conn } = require('./db.js');

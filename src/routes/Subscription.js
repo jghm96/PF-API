@@ -12,9 +12,10 @@ rSubscription.get('/', isAuthenticated ,async (req, res) => {
       where:{
         userId: req.user.id
       },
-      include: [{model:Pair, required: true, attributes: ['id','price', 'pair'], include: Symbol}]
+      include: [{model:Pair, required: true, attributes: ['id','price', 'pair'], include: [{model: Symbol, as:'Symbol1', attributes:['symbol','image']}, {model: Symbol, as:'Symbol2', attributes:['symbol','image']}]}]
     })
     let json = subscriptions.map(s => s.toJSON())
+    console.log(json[0].pair.Symbol1)
     const format = json.map(s => {
       console.log(s.pair.symbols)
       return {
@@ -24,8 +25,8 @@ rSubscription.get('/', isAuthenticated ,async (req, res) => {
         alertOnRise: s.alertOnRise,
         alertOnFall: s.alertOnFall,
         pair: [s.pair.pair, s.pair.price],
-        symbol1: [s.pair.symbols[0].symbol, s.pair.symbols[0].image],
-        symbol2: [s.pair.symbols[1].symbol, s.pair.symbols[1].image]
+        symbol1: [s.pair.Symbol1.symbol, s.pair.Symbol1.image],
+        symbol2: [s.pair.Symbol2.symbol, s.pair.Symbol2.image]
       }
     })
     res.json(format)
@@ -42,7 +43,7 @@ rSubscription.get('/:id', isAuthenticated,async (req, res) => {
         userId : req.user.id,
          id: req.params.id
       },
-      include: [{model:Pair, required: true, attributes: ['id','price', 'pair'], include: Symbol}]
+       include: [{model:Pair, required: true, attributes: ['id','price', 'pair'], include: [{model: Symbol, as:'Symbol1', attributes:['id']}, {model: Symbol, as:'Symbol2', attributes:['id']}]}]   
     });
     console.log(subscription)
     if(!subscription) return res.status(404).json({errorType:'subscriptionError', errorCode:'1210' , errorMessage: 'Subscription dont find'})
@@ -53,8 +54,8 @@ rSubscription.get('/:id', isAuthenticated,async (req, res) => {
       fallPrice: subscription.fallPrice,
       alertOnRise: subscription.alertOnRise,
       alertOnFall: subscription.alertOnFall,
-      symbol1Id: subscription.pair.symbols[0].id,
-      symbol2Id: subscription.pair.symbols[1].id
+      symbol1Id: subscription.pair.Symbol1.id,
+      symbol2Id: subscription.pair.Symbol2.id
     }
     res.json(format)
   }catch(err){
@@ -62,7 +63,7 @@ rSubscription.get('/:id', isAuthenticated,async (req, res) => {
   }
 })
 
-rSubscription.post('/', isAuthenticated ,async (req, res) => { //Ruta para subscripcion a cryptos que existan en la BD
+/*rSubscription.post('/', isAuthenticated ,async (req, res) => { //Ruta para subscripcion a cryptos que existan en la BD
   let {symbol1Id, symbol2Id, risePrice, fallPrice } = req.body
   
   try{  
@@ -122,6 +123,68 @@ rSubscription.post('/', isAuthenticated ,async (req, res) => { //Ruta para subsc
     res.status(500).json(err)
   }
 
+})*/
+
+rSubscription.post('/', isAuthenticated,async (req, res) => {
+  try{
+    let {symbol1Id, symbol2Id, risePrice, fallPrice } = req.body
+    
+    const user = await User.findByPk(req.user.id)
+    const symbol1 = await Symbol.findOne({
+      where: {
+        id: Number(symbol1Id)
+      }
+    })
+      
+    const symbol2 = await Symbol.findOne({
+      where: {
+        id: Number(symbol2Id)
+      }
+    })  
+    const pair = symbol1.toJSON().symbol.toUpperCase() + symbol2.toJSON().symbol.toUpperCase()
+    let response;
+    let pairApi;
+    try{
+      response = await axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=${pair}`)
+      pairApi= response.data
+    }catch(e){
+      return res.status(404).json({errorType:'subscriptionError', errorCode:'1420', errorMessage : 'Invalid Pair'})
+    }
+    const [pairDb, created] = await Pair.findOrCreate({
+      where: {
+        pair: pairApi.symbol
+      },
+      defaults: {
+        price: Number(pairApi.price)
+      }
+    })
+    
+    if(created){
+      await pairDb.setSymbol1(symbol1);
+      await pairDb.setSymbol2(symbol2)
+    }
+    
+    const [subscription, createds] = await Susbcription.findOrCreate({
+        where: {
+          userId : req.user.id,
+          pairId : pairDb.toJSON().id
+        },
+        defaults :{
+         risePrice: risePrice === undefined || risePrice < 0 ? 0 : risePrice,
+         fallPrice: fallPrice === undefined || fallPrice < 0 ? 0 : fallPrice,
+         alertOnFall: fallPrice === undefined || fallPrice <= 0 ? false : true,
+         alertOnRise: risePrice === undefined || risePrice <= 0 ? false : true
+ 
+        }
+      }) 
+    if(!createds) return res.status(404).json({errorType:'subscriptionError', errorCode:'1230',errorMessage : 'Subscription already exists'})
+    await subscription.setUser(user)
+    await subscription.setPair(pairDb)
+    res.json(subscription)
+
+  }catch(err){
+    res.status(500).json(err)
+  }
 })
 
 rSubscription.put('/:id', isAuthenticated, async (req, res) => {
