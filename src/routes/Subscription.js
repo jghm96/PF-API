@@ -15,7 +15,6 @@ rSubscription.get('/', isAuthenticated ,async (req, res) => {
       include: [{model:Pair, required: true, attributes: ['id','price', 'pair'], include: [{model: Symbol, as:'Symbol1', attributes:['symbol','image']}, {model: Symbol, as:'Symbol2', attributes:['symbol','image']}]}]
     })
     let json = subscriptions.map(s => s.toJSON())
-    console.log(json[0].pair.Symbol1)
     const format = json.map(s => {
       console.log(s.pair.symbols)
       return {
