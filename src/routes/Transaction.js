@@ -2,6 +2,7 @@ const { Router } = require('express');
 const { Transaction, Symbol, User } = require("../db");
 const transactions = Router();
 const isAuthenticated = require("../Authenticated");
+const { axios } = require('axios');
 
 transactions.post("/buy", isAuthenticated, async (req, res) => { // Permite crear una nueva transaccion
 
@@ -30,31 +31,20 @@ transactions.get("/state-account", isAuthenticated, async (req, res) => { // Per
             attributes: ["id", "deposit", "withdraw"],
             include: {
                 model: Symbol,
-                attributes: ["symbol"]
+                attributes: ["symbol",'image'],
             }
         });
-        var h = {};
         // All transactions
-        h.allTransactions = results.map(t => {
+        var h = results.map(t => {
             return {
                 'id': t.id,
                 'amount': t.deposit !== 0 ? t.deposit : -t.withdraw,
-                'symbol': t.symbol.symbol
+                'symbol': t.symbol.symbol,
+                'image':t.symbol.image
             }
         })
-        // Historical by symbol
-        var historicalBySymbol = {};
-        h.allTransactions.forEach(t => {
-            historicalBySymbol = {
-                ...historicalBySymbol,
-                [t.symbol]: historicalBySymbol[t.symbol] ? [...historicalBySymbol[t.symbol], t.amount] : [t.amount]
-            }
-        });
-        h.historicalBySymbol = historicalBySymbol;
-
-        res.json(h); // Esto es un objeto con dos elementos:
+        res.json(h);
         // All transactions podria servir para hacer un movimientos historicos de la cuenta
-        // Historical by Symbol podria servir para mostrar el rendimiento en un simbolo en particular.
     } catch {
         res.status(404).json({ 'message': 'Something was wrong.' });
     }
@@ -64,22 +54,32 @@ transactions.get("/current-balance", isAuthenticated, async (req, res) => { // P
 
     try {
         const userId = req.user.id;
-        const results = Transaction.findAll({
+        const results = await Transaction.findAll({
             where: { userId },
             attributes: ["id", "deposit", "withdraw"],
             include: {
                 model: Symbol,
-                attributes: ["symbol"]
+                attributes: ["symbol",'image']
             }
         });
+        const pairs = (await axios('https://api.binance.com/api/v3/ticker/price')).data;
         // All transactions
         var allTransactions = results.map(t => {
             return {
                 'id': t.id,
                 'amount': t.deposit !== 0 ? t.deposit : -t.withdraw,
-                'symbol': t.symbol.symbol
+                'symbol': t.symbol.symbol,
+                'image':t.symbol.image
             }
-        })
+        });
+        // handle images
+        var images = {};
+        h.allTransactions.forEach(t => {
+            images = {
+                ...images,
+                [t.symbol]: t.image 
+            }
+        });
         // Historical by symbol
         var historicalBySymbol = {};
         allTransactions.forEach(t => {
@@ -94,7 +94,12 @@ transactions.get("/current-balance", isAuthenticated, async (req, res) => { // P
         keys.forEach(k => {
             currentBalance = {
                 ...currentBalance,
-                [k]: historicalBySymbol[k].reduce((a, b) => a + b, 0)
+                [k]: {
+                    'balance':historicalBySymbol[k].reduce((a, b) => a + b, 0),
+                    'image':images[k],
+                    'inBtc':(pairs.filter(p=>p.symbol===inBtc))[0]?(pairs.filter(p=>p.symbol===inBtc))[0].price:'',
+                    'inUsdt':(pairs.filter(p=>p.symbol===inUsdt))[0]?(pairs.filter(p=>p.symbol===inUsdt))[0].price:'',
+                }
             }
         });
         res.json(currentBalance); // Esto es un objeto con un elementos:
