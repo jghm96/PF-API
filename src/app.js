@@ -39,8 +39,9 @@ server.use(passport.initialize());
 server.use(passport.session());
 
 server.use('/', routes);
-
-//require(`./Temporizador`)
+//require(`./VerificarOrdenes`)
+require(`./Temporizador`)
+//require(`./VerificarOrdenes`)
 
 // Error catching endware.
 server.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
