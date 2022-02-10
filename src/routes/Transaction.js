@@ -91,18 +91,29 @@ transactions.get("/current-balance", isAuthenticated, async (req, res) => { // P
         // current balance
         var currentBalance = {}
         let keys = Object.keys(historicalBySymbol);
+        let usdtToBtc=1/((pairs.filter(p=>p.symbol==='BTCUSDT'))[0].price)
         keys.forEach(k => {
             currentBalance = {
                 ...currentBalance,
                 [k]: {
                     'balance':historicalBySymbol[k].reduce((a, b) => a + b, 0),
                     'image':images[k],
-                    'inBtc':(pairs.filter(p=>p.symbol===inBtc))[0]?(pairs.filter(p=>p.symbol===inBtc))[0].price:'',
-                    'inUsdt':(pairs.filter(p=>p.symbol===inUsdt))[0]?(pairs.filter(p=>p.symbol===inUsdt))[0].price:'',
+                    'inUsdt':k==='usdt'?historicalBySymbol[k].reduce((a, b) => a + b, 0):(pairs.filter(p=>p.symbol===inUsdt))[0]?(pairs.filter(p=>p.symbol===inUsdt))[0].price*historicalBySymbol[k].reduce((a, b) => a + b, 0):'',
+                    'inBtc':k==='usdt'?(historicalBySymbol[k].reduce((a, b) => a + b, 0))*usdtToBtc:(pairs.filter(p=>p.symbol===inUsdt))[0]?((pairs.filter(p=>p.symbol===inUsdt))[0].price)*usdtToBtc*historicalBySymbol[k].reduce((a, b) => a + b, 0):'',
                 }
             }
         });
-        res.json(currentBalance); // Esto es un objeto con un elementos:
+        // Converting to an array so everyone is happy
+        var arrayOfHappiness = [];
+        keys.forEach(k=>{
+            arrayOfHappiness.push(
+                {
+                    ...currentBalance[k],
+                    'symbol':k,
+                }
+            )
+        })
+        res.json(arrayOfHappiness); 
         // Current Balance da cuenta del estado actual de la cuenta bajo todos los simbolos disponibles en la wallet.
     } catch {
         res.status(404).json({ 'message': 'Something was wrong.' });
