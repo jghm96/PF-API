@@ -1,7 +1,7 @@
 const { Router } = require('express');
 
 const subs = require('./Subscription')
-//const transaction = require('./Transactions')
+const transaction = require('./Transactions')
 //const order = require('./Order')
 //const user = require('./user')
 const login = require('./LoginJWT');
@@ -28,7 +28,7 @@ router.use('/subs', subs)
 //router.use('/pair', pair)
 //router.use('/user', user)
 //router.use('/order', order)
-//router.use('/transactions', transaction)
+router.use('/transactions', transaction)
 
 router.get("/logout",(req,res) => {
     req.logout();
