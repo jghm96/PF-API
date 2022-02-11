@@ -8,7 +8,8 @@ const login = require('./LoginJWT');
 const signUp = require('./Signup.js');
 const cryptos = require('./Cryptos.js');
 const million = require('./MillionGift.js');
-//const pair = require('./Pair')
+const pair = require('./Pair')
+const portfolio = require('./Portfolio')
 const addSymbols = require("../AddSymbols.js");
 let emptySymbols=true;
 
@@ -29,6 +30,7 @@ router.use('/subs', subs)
 //router.use('/user', user)
 //router.use('/order', order)
 router.use('/transactions', transaction)
+router.use('/portfolio', portfolio)
 
 router.get("/logout",(req,res) => {
     req.logout();
