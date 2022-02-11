@@ -50,7 +50,8 @@ transactions.get("/", isAuthenticated, async (req, res) => { // Permite ver el e
         } else {
             // All transactions
             var h = results.map(t => {
-                const date = t.updatedAt.toString().split(' GMT')
+                const date = new Date(t.updatedAt)
+                let mes = date.getMonth() + 1 < 10 ? '0'+ ( date.getMonth() + 1) : date.getMonth() + 1 
                 console.log(date)
                 return {
                     'id': t.id,
@@ -58,7 +59,7 @@ transactions.get("/", isAuthenticated, async (req, res) => { // Permite ver el e
                     'withdraw': t.withdraw,
                     'symbol': t.symbol.symbol,
                     'image': t.symbol.image,
-                    'date': date[0]
+                    'date': date.getFullYear().toString() +  mes.toString() +  date.getDate().toString()
                 }
             })
             res.json(h);
