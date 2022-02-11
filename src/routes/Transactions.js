@@ -39,7 +39,7 @@ transactions.get("/", isAuthenticated, async (req, res) => { // Permite ver el e
         const userId = req.user.id;
         const results = await Transaction.findAll({
             where: { userId },
-            attributes: ["id", "deposit", "withdraw"],
+            attributes: ["id", "deposit", "withdraw",'updatedAt'],
             include: {
                 model: Symbol,
                 attributes: ["symbol", 'image'],
@@ -50,12 +50,15 @@ transactions.get("/", isAuthenticated, async (req, res) => { // Permite ver el e
         } else {
             // All transactions
             var h = results.map(t => {
+                const date = t.updatedAt.toString().split(' GMT')
+                console.log(date)
                 return {
                     'id': t.id,
                     'deposit': t.deposit,
                     'withdraw': t.withdraw,
                     'symbol': t.symbol.symbol,
-                    'image': t.symbol.image
+                    'image': t.symbol.image,
+                    'date': date[0]
                 }
             })
             res.json(h);
