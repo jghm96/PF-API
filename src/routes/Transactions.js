@@ -52,7 +52,8 @@ transactions.get("/", isAuthenticated, async (req, res) => { // Permite ver el e
             var h = results.map(t => {
                 return {
                     'id': t.id,
-                    'amount': t.deposit !== 0 ? t.deposit : -t.withdraw,
+                    'deposit': t.deposit,
+                    'withdraw': t.withdraw,
                     'symbol': t.symbol.symbol,
                     'image': t.symbol.image
                 }
