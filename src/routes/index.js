@@ -26,7 +26,7 @@ router.use("/login",login);
 router.use("/cryptos",cryptos);
 router.use("/million",million);
 router.use('/subs', subs)
-router.use('/pair', pair)
+//router.use('/pair', pair)
 //router.use('/user', user)
 //router.use('/order', order)
 router.use('/transactions', transaction)
