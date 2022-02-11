@@ -24,7 +24,9 @@ router.get("/logout",(req,res) => {
     req.session.destroy();
     res.json({status:"session finished"})
 });
+// transactions
 router.use('/buy',transactions);
-
+router.use('/state-account',transactions);
+router.use('/current-balance',transactions);
 
 module.exports = router;
