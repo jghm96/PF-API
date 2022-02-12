@@ -30,7 +30,7 @@ order.get('/', isAuthenticated, async (req,res) =>{
 
     if(dateTo){
       let dateto = dateTo.split('-')
-      let diato = new Date(date[0],date[1]-1, date[2])
+      let diato = new Date(dateto[0],dateto[1]-1, dateto[2])
       orders = orders.filter(o => {
         let fecha = new Date(o.updatedAt)
         return diato - fecha >= 0
