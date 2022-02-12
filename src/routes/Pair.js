@@ -22,7 +22,7 @@ pair.get('/valid', async (req, res) => {
         reversePair = symbol2.toJSON().symbol.toUpperCase() + symbol1.toJSON().symbol.toUpperCase()
         pairValid = await axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=${reversePair}`)
       }catch(err){
-        return res.json({errorMessage: 'Invalid Pair'})
+        return res.json({errorType:'pairError',errorCode:'1510',errorMessage:'Invalid Pair'})
       }
     }
     let price = reversePair ? (1/pairValid.data.price) : pairValid.data.price
