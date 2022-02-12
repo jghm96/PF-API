@@ -2,7 +2,7 @@ const { Router } = require('express');
 
 const subs = require('./Subscription')
 const transaction = require('./Transactions')
-//const order = require('./Order')
+const order = require('./Order')
 //const user = require('./user')
 const login = require('./LoginJWT');
 const signUp = require('./Signup.js');
@@ -28,7 +28,7 @@ router.use("/million",million);
 router.use('/subs', subs)
 router.use('/pair', pair)
 //router.use('/user', user)
-//router.use('/order', order)
+router.use('/order', order)
 router.use('/transactions', transaction)
 router.use('/portfolio', portfolio)
 
