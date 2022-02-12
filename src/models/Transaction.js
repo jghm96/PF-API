@@ -6,11 +6,11 @@ module.exports = (sequelize) => {
   // comentario
   sequelize.define('transaction', {
     withdraw:{
-        type: DataTypes.INTEGER,
+        type: DataTypes.DOUBLE,
         defaultValue:0
     },
     deposit:{
-      type: DataTypes.INTEGER,
+      type: DataTypes.DOUBLE,
       defaultValue:0
   },
     

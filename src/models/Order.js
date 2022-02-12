@@ -3,19 +3,19 @@ const { DataTypes } = require('sequelize');
 module.exports = (sequelize) => {
   sequelize.define('order', {
     buyOrder:{
-        type: DataTypes.STRING,
-        default:Date.now
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
     },
     amount: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.DOUBLE,
         allowNull: false,
       },
     marketOrder: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.BOOLEAN,
       allowNull: false,
     },
     priceLimit: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.DOUBLE,
       allowNull:false
     },
     status: {
@@ -26,10 +26,18 @@ module.exports = (sequelize) => {
       type: DataTypes.BOOLEAN,
       allowNull:false,
     },
-    /*sendOn: {
+    sendOnPending: {
       type: DataTypes.BOOLEAN,
       allowNull:false,
-    },*/
-    
+    },
+    sendOnFullfiled: {
+      type: DataTypes.BOOLEAN,
+      allowNull:false,
+    },
+    sendOnCanceled: {
+      type: DataTypes.BOOLEAN,
+      allowNull:false,
+    },
+
   });
 };

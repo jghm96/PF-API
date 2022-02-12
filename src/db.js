@@ -12,10 +12,10 @@ const sequelize = new Sequelize(DATABASE_URL, {
   native: false, // lets Sequelize know we can use pg-native for ~30% more speed
   dialectOptions:{
     ssl:{
-       require:true,
+      require:true,
       rejectUnauthorized:false
-     }
-   }
+    }
+  }
 });
 const basename = path.basename(__filename);
 
@@ -44,10 +44,12 @@ Susbcription.belongsTo(User);
 Pair.hasMany(Susbcription,{foreignKey:"pairId"});
 Susbcription.belongsTo(Pair);
 
+
+//Symbol.hasMany(Order,{foreignKey:"symbolId"});
 User.hasMany(Order,{foreignKey:"userId"});
 Order.belongsTo(User);
-Symbol.hasMany(Order,{foreignKey:"symbolId"});
-Order.belongsTo(Symbol);
+Order.belongsTo(Symbol, {as:'SymbolBuy', foreignKey:'idSymbolToBuy'})
+Order.belongsTo(Symbol, {as:'SymbolSell', foreignKey:'idSymbolToSell'});
 
 User.hasMany(Transaction,{foreignKey:"userId"});
 Transaction.belongsTo(User);
@@ -58,7 +60,7 @@ Transaction.belongsTo(Symbol);
 //Pair.belongsToMany(Symbol,  {through: 'symbol-pair'});
 
 Pair.belongsTo(Symbol, {as:'Symbol1', foreignKey:'symbol1Id'})
-Pair.belongsTo(Symbol, {as: 'Symbol2', foreignKey: 'symbol2Id'})
+Pair.belongsTo(Symbol, {as:'Symbol2', foreignKey: 'symbol2Id'})
 
 module.exports = {
   ...sequelize.models, // para poder importar los modelos así: const { Product, User } = require('./db.js');

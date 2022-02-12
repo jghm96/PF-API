@@ -39,7 +39,7 @@ server.use(passport.initialize());
 server.use(passport.session());
 
 server.use('/', routes);
-//require(`./VerificarOrdenes`)
+require(`./VerificarOrdenes`)
 require(`./Temporizador`)
 //require(`./VerificarOrdenes`)
 
