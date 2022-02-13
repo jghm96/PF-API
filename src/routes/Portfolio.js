@@ -16,7 +16,7 @@ portfolio.get("/", isAuthenticated, async (req, res) => { // Permite ver el esta
             }
         });
         if (!results) {
-            res.status(404).json({ errorType: 'errorTransactions', errorCode: '1520', errorMessage: 'There are not transactions yet.' })
+            return res.json([])
         } else {
             const pairs = (await axios('https://api.binance.com/api/v3/ticker/price')).data;
             // All transactions
