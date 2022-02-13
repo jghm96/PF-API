@@ -71,7 +71,7 @@ transactions.get("/current-balance", isAuthenticated, async (req, res) => { // P
         const userId = req.user.id;
         const results = await Transaction.findAll({
             where: { userId },
-            attributes: ["id", "deposit", "withdraw"],
+            attributes: ["id", "deposit", "withdraw","idSymbol"],
             include: {
                 model: Symbol,
                 attributes: ["symbol", 'image']
@@ -87,15 +87,23 @@ transactions.get("/current-balance", isAuthenticated, async (req, res) => { // P
                     'id': t.id,
                     'amount': t.deposit !== 0 ? t.deposit : -t.withdraw,
                     'symbol': t.symbol.symbol,
-                    'image': t.symbol.image
+                    'image': t.symbol.image,
+                    'idSymbol':t.idSymbol,
                 }
             });
             // handle images
             var images = {};
-            h.allTransactions.forEach(t => {
+            allTransactions.forEach(t => {
                 images = {
                     ...images,
                     [t.symbol]: t.image
+                }
+            });
+            var symbols = {};
+            allTransactions.forEach(t => {
+                symbols = {
+                    ...symbols,
+                    [t.symbol]: t.idSymbol
                 }
             });
             // Historical by symbol
@@ -109,15 +117,17 @@ transactions.get("/current-balance", isAuthenticated, async (req, res) => { // P
             // current balance
             var currentBalance = {}
             let keys = Object.keys(historicalBySymbol);
-            let usdtToBtc = 1 / ((pairs.filter(p => p.symbol === 'BTCUSDT'))[0].price)
+            let usdtToBtc = 1 / ((pairs.filter(p => p.symbol === 'BTCUSDT'))[0].price);
             keys.forEach(k => {
+              let pairSymbol = k.toUpperCase()+'USDT';
                 currentBalance = {
                     ...currentBalance,
                     [k]: {
                         'balance': historicalBySymbol[k].reduce((a, b) => a + b, 0),
                         'image': images[k],
-                        'inUsdt': k === 'usdt' ? historicalBySymbol[k].reduce((a, b) => a + b, 0) : (pairs.filter(p => p.symbol === inUsdt))[0] ? (pairs.filter(p => p.symbol === inUsdt))[0].price * historicalBySymbol[k].reduce((a, b) => a + b, 0) : '',
-                        'inBtc': k === 'usdt' ? (historicalBySymbol[k].reduce((a, b) => a + b, 0)) * usdtToBtc : (pairs.filter(p => p.symbol === inUsdt))[0] ? ((pairs.filter(p => p.symbol === inUsdt))[0].price) * usdtToBtc * historicalBySymbol[k].reduce((a, b) => a + b, 0) : '',
+                        'idSymbol':symbols[k],
+                        'inUsdt': k === 'usdt' ? historicalBySymbol[k].reduce((a, b) => a + b, 0) : (pairs.filter(p => p.symbol === pairSymbol))[0] ? (pairs.filter(p => p.symbol === pairSymbol))[0].price * historicalBySymbol[k].reduce((a, b) => a + b, 0) : '',
+                        'inBtc': k === 'usdt' ? (historicalBySymbol[k].reduce((a, b) => a + b, 0)) * usdtToBtc : (pairs.filter(p => p.symbol === pairSymbol))[0] ? ((pairs.filter(p => p.symbol === pairSymbol))[0].price) * usdtToBtc * historicalBySymbol[k].reduce((a, b) => a + b, 0) : '',
                     }
                 }
             });
