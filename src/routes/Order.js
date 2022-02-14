@@ -15,7 +15,6 @@ order.get('/', isAuthenticated, async (req,res) =>{
     
     orders = orders.map(o => o.toJSON())
 
-    console.log(orders)
     if(status !== undefined && status != 4)
       orders = orders.filter(o => status == o.status)
     
@@ -64,11 +63,6 @@ order.get('/:id', isAuthenticated, async(req, res)=> {
 order.post('/', isAuthenticated,async(req,res) => {
   try{
     let {buyOrder, symbol1Id, symbol2Id, amount, marketOrder, priceLimit} = req.body
-    if(buyOrder) {
-      let aux = symbol1Id
-      symbol1Id = symbol2Id,
-      symbol2Id = aux
-    }
     const symbol1 = await Symbol.findByPk(Number(symbol1Id))
     const symbol2 = await Symbol.findByPk(Number(symbol2Id))
     let pair = symbol1.toJSON().symbol.toUpperCase() + symbol2.toJSON().symbol.toUpperCase()
