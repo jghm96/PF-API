@@ -44,8 +44,12 @@ rSubscription.get('/:id', isAuthenticated,async (req, res) => {
       },
        include: [{model:Pair, required: true, attributes: ['id','price', 'pair'], include: [{model: Symbol, as:'Symbol1', attributes:['id']}, {model: Symbol, as:'Symbol2', attributes:['id']}]}]   
     });
-    console.log(subscription)
-    if(!subscription) return res.status(404).json({errorType:'subscriptionError', errorCode:'1210' , errorMessage: 'Subscription dont find'})
+    if(!subscription){ 
+
+      
+
+      return res.status(404).json({errorType:'subscriptionError', errorCode:'1210' , errorMessage: 'Subscription dont find'})
+    }
     subscription = subscription.toJSON()
     const format = {
       id: subscription.id,
@@ -226,7 +230,8 @@ rSubscription.put('/:id', isAuthenticated, async (req, res) => {
       await pairDb.setSymbol1(symbol1);
       await pairDb.setSymbol2(symbol2)
     }
-
+    
+    const subAntigua = await Susbcription.findByPk(req.params.id)
     const sub = await Susbcription.findOne({
       where:{
         userId: req.user.id,
@@ -234,7 +239,7 @@ rSubscription.put('/:id', isAuthenticated, async (req, res) => {
       }
     })
 
-    if(sub) return res.status(404).json({errorType:'subscriptionError', errorCode:'1230',errorMessage : 'Subscription already exists'})
+    if(sub && subAntigua.toJSON().pairId !== sub.toJSON().pairId) return res.status(404).json({errorType:'subscriptionError', errorCode:'1230',errorMessage : 'Subscription already exists'})
 
     await Susbcription.update({
       risePrice: risePrice === undefined || risePrice < 0 ? 0 : risePrice,

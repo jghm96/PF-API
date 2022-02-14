@@ -15,7 +15,6 @@ order.get('/', isAuthenticated, async (req,res) =>{
     
     orders = orders.map(o => o.toJSON())
 
-    console.log(orders)
     if(status !== undefined && status != 4)
       orders = orders.filter(o => status == o.status)
     
