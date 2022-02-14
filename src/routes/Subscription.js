@@ -143,12 +143,18 @@ rSubscription.post('/', isAuthenticated,async (req, res) => {
     const pair = symbol1.toJSON().symbol.toUpperCase() + symbol2.toJSON().symbol.toUpperCase()
     let response;
     let pairApi;
+    let reversePair = null;
     try{
       response = await axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=${pair}`)
-      pairApi= response.data
     }catch(e){
+      try{
+        reversePair = symbol2.toJSON().symbol.toUpperCase() + symbol1.toJSON().symbol.toUpperCase()
+        response = await axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=${reversePair}`)
+      }catch(err){
       return res.status(404).json({errorType:'subscriptionError', errorCode:'1420', errorMessage : 'Invalid Pair'})
+      }
     }
+    pairApi = response.data
     const [pairDb, created] = await Pair.findOrCreate({
       where: {
         pair: pairApi.symbol
@@ -192,21 +198,44 @@ rSubscription.put('/:id', isAuthenticated, async (req, res) => {
     const symbol1 = await Symbol.findByPk(Number(symbol1Id))
     const symbol2 = await Symbol.findByPk(Number(symbol2Id))
     if(!symbol1 || !symbol2 ) return res.status(404).json({errorType:'subscriptionError', errorCode:'1210', errorMessage: 'One of the symbols does not exists at the Symbols DB'})
-    let pair = symbol1.toJSON().symbol.toUpperCase() + symbol2.toJSON().symbol.toUpperCase()
-    const response = await axios.get('https://api.binance.com/api/v3/ticker/price')
-    const pairApi = response.data
-    //console.log(pairApi)
-    const pairExistence = pairApi.filter(c => c.symbol === pair )
-    //console.log(pairExistence)
-    if(!pairExistence.length) return res.status(404).json({errorType:'subscriptionError', errorCode:'1420' , errorMessage: 'Invalid Pair'})
-    //await Pair.update({
-    //  price: pairExistence[0].price
-    //}
-    //  ,{where : {
-    //    pair: pairExistence[0].symbol
-    //}})
-    //console.log(pairDb.toJSON())
-    //console.log(req.user.id, pairDb.toJSON().id)
+    const pair = symbol1.toJSON().symbol.toUpperCase() + symbol2.toJSON().symbol.toUpperCase()
+    let response;
+    let pairApi;
+    let reversePair = null;
+    try{
+      response = await axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=${pair}`)
+    }catch(e){
+      try{
+        reversePair = symbol2.toJSON().symbol.toUpperCase() + symbol1.toJSON().symbol.toUpperCase()
+        response = await axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=${reversePair}`)
+      }catch(err){
+      return res.status(404).json({errorType:'subscriptionError', errorCode:'1420', errorMessage : 'Invalid Pair'})
+      }
+    }
+    pairApi = response.data
+    const [pairDb, created] = await Pair.findOrCreate({
+      where: {
+        pair: pairApi.symbol
+      },
+      defaults: {
+        price: Number(pairApi.price)
+      }
+    })
+    
+    if(created){
+      await pairDb.setSymbol1(symbol1);
+      await pairDb.setSymbol2(symbol2)
+    }
+
+    const sub = await Susbcription.findOne({
+      where:{
+        userId: req.user.id,
+        pairId: pairDb.toJSON().id
+      }
+    })
+
+    if(sub) return res.status(404).json({errorType:'subscriptionError', errorCode:'1230',errorMessage : 'Subscription already exists'})
+
     await Susbcription.update({
       risePrice: risePrice === undefined || risePrice < 0 ? 0 : risePrice,
       fallPrice: fallPrice === undefined || fallPrice < 0 ? 0 : fallPrice,
@@ -225,6 +254,7 @@ rSubscription.put('/:id', isAuthenticated, async (req, res) => {
       }
     })
     if(!updated) return res.status(404).json({errorType:'subscriptionError', errorCode:'1250' ,errorMessage: 'There was a problem while updating the registry'})
+    await updated.setPair(pairDb)
     res.json(updated)
     
   }catch(err){
