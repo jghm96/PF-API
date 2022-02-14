@@ -31,7 +31,7 @@ pair.get('/valid', async (req, res) => {
         return res.status(404).json({errorType:'pairError',errorCode:'1510',errorMessage:'Invalid Pair'})
       }
     }
-    let price = reversePair ? (1/pairValid.data.price) : pairValid.data.price
+    let price = reversePair ? (1/pairValid.data.price) : Number(pairValid.data.price)
     res.json({message: 'Pair valid', price: price})
   }catch(err){
     res.status(500).json(err)
