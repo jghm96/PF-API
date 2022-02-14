@@ -28,7 +28,7 @@ router.use("/million",million);
 router.use('/subs', subs)
 router.use('/pair', pair)  
 //router.use('/user', user)
-router.use('/order', order)
+router.use('/orders', order)
 router.use('/transactions', transaction)
 router.use('/portfolio', portfolio)
 

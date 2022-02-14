@@ -61,7 +61,7 @@ order.get('/:id', isAuthenticated, async(req, res)=> {
   }
 })
 
-order.post('/neworder', isAuthenticated,async(req,res) => {
+order.post('/', isAuthenticated,async(req,res) => {
   try{
     let {buyOrder, symbol1Id, symbol2Id, amount, marketOrder, priceLimit} = req.body
     const symbol1 = await Symbol.findByPk(Number(symbol1Id))
@@ -78,10 +78,7 @@ order.post('/neworder', isAuthenticated,async(req,res) => {
         return res.status(404).json({errorType: 'orderError', errorCode:'1310', errorMessage:'Invalid Pair'})
       }
     }
-    console.log(pairValid)
     const user = await User.findByPk(req.user.id)
-    console.log(user.toJSON())
-    console.log(pairValid.symbol)
     const [pairDb,created] = await Pair.findOrCreate({
       where: {
         pair: pairValid.symbol
@@ -94,7 +91,6 @@ order.post('/neworder', isAuthenticated,async(req,res) => {
       await pairDb.setSymbol1(symbol1);
       await pairDb.setSymbol2(symbol2)
     }
-    console.log(pairDb.toJSON())
     
     if(buyOrder){
       const cantidad = await getBalance(req.user.id, symbol2Id)
