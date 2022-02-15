@@ -35,6 +35,7 @@ order.get('/', isAuthenticated, async (req,res) =>{
         marketOrder: or.marketOrder,
         priceLimit: or.priceLimit,
         status: or.status,
+        amount: or.amount,
         confirmationRequeried: or.confirmationRequeried,
         sendOnPending: or.sendOnPending,
         sendOnFullfiled: or.sendOnFullfiled,
@@ -109,13 +110,14 @@ order.post('/', isAuthenticated,async(req,res) => {
     const symbol1 = await Symbol.findByPk(Number(symbol1Id))
     const symbol2 = await Symbol.findByPk(Number(symbol2Id))
     let pair = symbol1.toJSON().symbol.toUpperCase() + symbol2.toJSON().symbol.toUpperCase()
+    let reversePair = null;
     let pairValid;
     try{
       pairValid = (await axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=${pair}`)).data
     }catch(e){
       try{
-        pair = symbol2.toJSON().symbol.toUpperCase() + symbol1.toJSON().symbol.toUpperCase()
-        pairValid = (await axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=${pair}`)).data
+        reversePair = symbol2.toJSON().symbol.toUpperCase() + symbol1.toJSON().symbol.toUpperCase()
+        pairValid = (await axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=${reversePair}`)).data
       }catch(e){
         await ErrorLog.create({
           userId: req.user.id,
@@ -139,8 +141,14 @@ order.post('/', isAuthenticated,async(req,res) => {
       }
     })
     if(created){
-      await pairDb.setSymbol1(symbol1);
-      await pairDb.setSymbol2(symbol2)
+       if(reversePair){
+        await pairDb.setSymbol1(symbol2);
+        await pairDb.setSymbol2(symbol1);
+
+      }else{
+        await pairDb.setSymbol1(symbol1);
+        await pairDb.setSymbol2(symbol2);
+      }
     }
     
     if(buyOrder){
