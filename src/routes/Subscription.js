@@ -12,7 +12,7 @@ rSubscription.get('/', isAuthenticated ,async (req, res) => {
       where:{
         userId: req.user.id
       },
-      include: [{model:Pair, required: true, attributes: ['id','price', 'pair'], include: [{model: Symbol, as:'Symbol1', attributes:['symbol','image']}, {model: Symbol, as:'Symbol2', attributes:['symbol','image']}]}]
+      include: [{model:Pair, required: true, attributes: ['id','price', 'pair'], include: [{model: Symbol, as:'Symbol1', attributes:['id','symbol','image']}, {model: Symbol, as:'Symbol2', attributes:['id','symbol','image']}]}]
     })
     let json = subscriptions.map(s => s.toJSON())
     const format = json.map(s => {
@@ -23,7 +23,9 @@ rSubscription.get('/', isAuthenticated ,async (req, res) => {
         alertOnRise: s.alertOnRise,
         alertOnFall: s.alertOnFall,
         pair: [s.pair.pair, s.pair.price],
+        symbol1Id: s.pair.Symbol1.id,
         symbol1: [s.pair.Symbol1.symbol, s.pair.Symbol1.image],
+        symbol2Id: s.pair.Symbol2.id,
         symbol2: [s.pair.Symbol2.symbol, s.pair.Symbol2.image]
       }
     })
