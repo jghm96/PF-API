@@ -50,17 +50,22 @@ User.hasMany(Order,{foreignKey:"userId"});
 Order.belongsTo(User);
 Order.belongsTo(Symbol, {as:'SymbolBuy', foreignKey:'idSymbolToBuy'})
 Order.belongsTo(Symbol, {as:'SymbolSell', foreignKey:'idSymbolToSell'});
+//Order.belongsTo(Transaction, {as:'TransactionBuy', foreignKey:'transactionBuyId'})
+//Order.belongsTo(Transaction,{as: 'TransactionSell', foreignKey:'transactionSellId'} )
 
 User.hasMany(Transaction,{foreignKey:"userId"});
 Transaction.belongsTo(User);
 Symbol.hasMany(Transaction,{foreignKey:"symbolId"});
 Transaction.belongsTo(Symbol);
+Transaction.belongsTo(Order)
+
 
 //Symbol.belongsToMany(Pair, {through: 'symbol-pair'});
 //Pair.belongsToMany(Symbol,  {through: 'symbol-pair'});
 
 Pair.belongsTo(Symbol, {as:'Symbol1', foreignKey:'symbol1Id'})
 Pair.belongsTo(Symbol, {as:'Symbol2', foreignKey: 'symbol2Id'})
+
 
 module.exports = {
   ...sequelize.models, // para poder importar los modelos así: const { Product, User } = require('./db.js');

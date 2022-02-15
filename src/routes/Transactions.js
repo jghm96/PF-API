@@ -39,7 +39,7 @@ transactions.get("/", isAuthenticated, async (req, res) => { // Permite ver el e
         const userId = req.user.id;
         const results = await Transaction.findAll({
             where: { userId },
-            attributes: ["id", "deposit", "withdraw",'updatedAt'],
+            attributes: ["id", "deposit", "withdraw",'orderId','updatedAt'],
             include: {
                 model: Symbol,
                 attributes: ["symbol", 'image'],
@@ -52,16 +52,20 @@ transactions.get("/", isAuthenticated, async (req, res) => { // Permite ver el e
             var h = results.map(t => {
                 const date = new Date(t.updatedAt)
                 let mes = date.getMonth() + 1 < 10 ? '0'+ ( date.getMonth() + 1) : date.getMonth() + 1 
-                console.log(date)
+                let minutes = date.getMinutes().toString().length < 2 ? '0' + date.getMinutes().toString() : date.getMinutes().toString()
+                console.log(date.getMinutes())
                 return {
                     'id': t.id,
                     'deposit': t.deposit,
                     'withdraw': t.withdraw,
                     'symbol': t.symbol.symbol,
                     'image': t.symbol.image,
-                    'date': date.getFullYear().toString() +  mes.toString() +  date.getDate().toString()
+                    'orderId': t.orderId,
+                    'date': date.getFullYear().toString() + '/'+ mes.toString()+'/' +  date.getDate().toString(),
+                    'time': `${date.getHours().toString()}:${minutes}`  
                 }
             })
+            h = h.length ? h.sort((a,b) => a.orderId - b.orderId) : []
             res.json(h);
         }
         // All transactions podria servir para hacer un movimientos historicos de la cuenta
