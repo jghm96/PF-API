@@ -1,5 +1,5 @@
 const order = require('express').Router()
-const { Order, Transaction, User,Symbol, Pair } = require('../db')
+const { Order, Transaction, User,Symbol, Pair, ErrorLog } = require('../db')
 const { isAuthenticated } = require('../JWT/JSONWT')
 const { getBalance } = require('../GetBalance')
 const axios = require('axios')
@@ -10,10 +10,43 @@ order.get('/', isAuthenticated, async (req,res) =>{
     let orders = await Order.findAll({
       where: {
         userId: req.user.id
-      }
+      },
+      include:[
+        {
+          model: Symbol, 
+          as:'SymbolBuy', 
+          attributes:['symbol','image']
+        },
+        {
+          model:Symbol,
+          as:'SymbolSell',
+          attributes:['symbol','image']
+        }
+      ]
     })
     
-    orders = orders.map(o => o.toJSON())
+    orders = orders.map(o => {
+      let or = o.toJSON()
+      let date = new Date(or.updatedAt)
+      let month = date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth()
+      return {
+        id: or.id,
+        buyOrder: or.buyOrder,
+        marketOrder: or.marketOrder,
+        priceLimit: or.priceLimit,
+        status: or.status,
+        confirmationRequeried: or.confirmationRequeried,
+        sendOnPending: or.sendOnPending,
+        sendOnFullfiled: or.sendOnFullfiled,
+        sendOnCanceled: or.sendOnCanceled,
+        userId: or.userId,
+        SymbolBuy: or.SymbolBuy,
+        idSymbolToBuy: or.idSymbolToBuy,
+        SymbolSell: or.SymbolSell,
+        idSymbolToSell: or.idSymbolToSell,
+        date: `${date.getFullYear()}/${month}/${date.getDate()}`
+      }
+    })
 
     if(status !== undefined && status != 4)
       orders = orders.filter(o => status == o.status)
@@ -34,9 +67,8 @@ order.get('/', isAuthenticated, async (req,res) =>{
         let fecha = new Date(o.updatedAt)
         return diato - fecha >= 0
       })
-    }
-
-    
+    }    
+    orders = orders.sort((a,b) => a.id - b.id )
     res.json(orders)
   }catch(err){
     res.status(500).json(err)
@@ -53,7 +85,18 @@ order.get('/:id', isAuthenticated, async(req, res)=> {
         userId: req.user.id
       }
     })
-    if(!order) return res.status(404).json({errorType:'orderError', errorCode:'1310', errorMessage:'Order not found for this user'})
+    if(!order){
+      await ErrorLog.create({
+        userId: req.user.id,
+        Method: Object.keys(req.route.methods)[0],
+        Route: JSON.stringify("orders"+req.route.path),
+        Body: JSON.stringify(req.body),
+        errorType:'orderError', 
+        errorCode:'1310', 
+        errorMessage:'Order not found for this user'
+      })
+      return res.status(404).json({errorType:'orderError', errorCode:'1310', errorMessage:'Order not found for this user'})
+    }
     return res.json(order)
   }catch(err){
     res.status(500).json(err)
@@ -74,6 +117,15 @@ order.post('/', isAuthenticated,async(req,res) => {
         pair = symbol2.toJSON().symbol.toUpperCase() + symbol1.toJSON().symbol.toUpperCase()
         pairValid = (await axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=${pair}`)).data
       }catch(e){
+        await ErrorLog.create({
+          userId: req.user.id,
+          Method: Object.keys(req.route.methods)[0],
+          Route: JSON.stringify("orders"+req.route.path),
+          Body: JSON.stringify(req.body),
+          errorType: 'orderError', 
+          errorCode:'1310', 
+          errorMessage:'Invalid Pair'
+        })
         return res.status(404).json({errorType: 'orderError', errorCode:'1310', errorMessage:'Invalid Pair'})
       }
     }
@@ -111,6 +163,15 @@ order.post('/', isAuthenticated,async(req,res) => {
         
         return res.json(newOrder)
       }else{
+        await ErrorLog.create({
+          userId: req.user.id,
+          Method: Object.keys(req.route.methods)[0],
+          Route: JSON.stringify("orders"+req.route.path),
+          Body: JSON.stringify(req.body),
+          errorType:'orderError', 
+          errorCode: '1340', 
+          errorMessage:'Insufficient balance'
+        })
         return res.status(404).json({errorType:'orderError', errorCode: '1340', errorMessage:'Insufficient balance'})
       }
     }else{
@@ -134,6 +195,15 @@ order.post('/', isAuthenticated,async(req,res) => {
          
         return res.json(newOrder)
       }else{
+        await ErrorLog.create({
+          userId: req.user.id,
+          Method: Object.keys(req.route.methods)[0],
+          Route: JSON.stringify("orders"+req.route.path),
+          Body: JSON.stringify(req.body),
+          errorType:'orderError', 
+          errorCode: '1340', 
+          errorMessage:'Insufficient balance'
+        })
         return res.status(404).json({errorType:'orderError', errorCode: '1340', errorMessage:'Insufficient balance'})
       }
     }
@@ -152,7 +222,18 @@ order.put('/:id', isAuthenticated, async (req,res) => {
         status: 0
       }
     })
-    if(!order) return res.status(404).json({errorType: 'orderError', errorCode:'1310', errorMessage:'Order not found or the order maybe it is fullfiled or canceled'})
+    if(!order){
+      await ErrorLog.create({
+        userId: req.user.id,
+        Method: Object.keys(req.route.methods)[0],
+        Route: JSON.stringify("orders"+req.route.path),
+        Body: JSON.stringify(req.body),
+        errorType: 'orderError', 
+        errorCode:'1310', 
+        errorMessage:'Order not found or the order maybe it is fullfiled or canceled'
+        })
+      return res.status(404).json({errorType: 'orderError', errorCode:'1310', errorMessage:'Order not found or the order maybe it is fullfiled or canceled'})
+    }
     await order.update({
       buyOrder,
       amount,
@@ -167,18 +248,47 @@ order.put('/:id', isAuthenticated, async (req,res) => {
 
 order.delete('/:id', isAuthenticated, async (req,res)=>{
   try{
-    const order = await Order.findByPk(req.params.id)
+    const order = await Order.findOne({
+      where:{
+        id: req.params.id,
+        userId: req.user.id,
+      }
+    })
     
-    if(!order) return res.status(404).json({errorType:'orderError', errorCode:'1320', errorMessage:'Order not found'})
-
-    await Order.destroy({
+    if(!order){
+      await ErrorLog.create({
+        userId: req.user.id,
+        Method: Object.keys(req.route.methods)[0],
+        Route: JSON.stringify("orders"+req.route.path),
+        Body: JSON.stringify(req.body),
+        errorType:'orderError', 
+        errorCode:'1320', 
+        errorMessage:'Order not found'
+        })
+      return res.status(404).json({errorType:'orderError', errorCode:'1320', errorMessage:'Order not found for this user'})
+    }
+    if(order.toJSON().sendOnPending === false){
+      await ErrorLog.create({
+        userId: req.user.id,
+        Method: Object.keys(req.route.methods)[0],
+        Route: JSON.stringify("orders"+req.route.path),
+        Body: JSON.stringify(req.body),
+        errorType:'orderError', 
+        errorCode:'1350', 
+        errorMessage:'Order fullfiled or canceled'
+      })
+      return res.status(404).json({errorType:'orderError', 
+        errorCode:'1350', 
+        errorMessage:'Order fullfiled or canceled'})
+    }
+    await order.destroy({
       where: {
         id: order.toJSON().id,
         userId: req.user.id,
         status: 0
       }
     })
-    res.json({message: 'Subscription eliminated'})
+    res.json({message: 'Order eliminated'})
   }catch(err){
 
   }

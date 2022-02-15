@@ -1,6 +1,6 @@
 const express = require('express')
 const rSubscription = express.Router()
-const { Symbol, User, Pair, Susbcription } = require('../db')
+const { Symbol, User, Pair, Susbcription, ErrorLog } = require('../db')
 const { isAuthenticated } = require('../JWT/JSONWT')
 const transporter = require('../Mail')
 const axios = require('axios')
@@ -16,7 +16,6 @@ rSubscription.get('/', isAuthenticated ,async (req, res) => {
     })
     let json = subscriptions.map(s => s.toJSON())
     const format = json.map(s => {
-      console.log(s.pair.symbols)
       return {
         id: s.id,
         risePrice: s.risePrice,
@@ -45,9 +44,16 @@ rSubscription.get('/:id', isAuthenticated,async (req, res) => {
        include: [{model:Pair, required: true, attributes: ['id','price', 'pair'], include: [{model: Symbol, as:'Symbol1', attributes:['id']}, {model: Symbol, as:'Symbol2', attributes:['id']}]}]   
     });
     if(!subscription){ 
-
+      await ErrorLog.create({
+        userId: req.user.id,
+        Method: Object.keys(req.route.methods)[0],
+        Route: JSON.stringify("subs"+req.route.path),
+        Body: JSON.stringify(req.body),
+        errorType:'subscriptionError', 
+        errorCode:'1210' , 
+        errorMessage: 'Subscription dont find'
+      })
       
-
       return res.status(404).json({errorType:'subscriptionError', errorCode:'1210' , errorMessage: 'Subscription dont find'})
     }
     subscription = subscription.toJSON()
@@ -65,68 +71,6 @@ rSubscription.get('/:id', isAuthenticated,async (req, res) => {
     res.status(500).json(err)
   }
 })
-
-/*rSubscription.post('/', isAuthenticated ,async (req, res) => { //Ruta para subscripcion a cryptos que existan en la BD
-  let {symbol1Id, symbol2Id, risePrice, fallPrice } = req.body
-  
-  try{  
-      const user = await User.findByPk(req.user.id)
-      const symbol1 = await Symbol.findOne({
-        where: {
-          id: Number(symbol1Id)
-        }
-      })
-      
-      const symbol2 = await Symbol.findOne({
-        where: {
-          id: Number(symbol2Id)
-        }
-      })
-  
-      const pair = symbol1.toJSON().symbol.toUpperCase() + symbol2.toJSON().symbol.toUpperCase()
-      const response = await axios.get('https://api.binance.com/api/v3/ticker/price')
-      const pairApi= response.data
-      const existence = pairApi.filter(c => c.symbol === pair)
-
-      if(!existence.length) return res.status(404).json({errorType:'subscriptionError', errorCode:'1420', errorMessage : 'Invalid Pair'})
-      
-      //if(symbolsDb.length < 2) return res.status(404).json({message :'Uno de los simbolos no existe'})
-
-      const [pairDb, created] = await Pair.findOrCreate({
-        where: {
-          pair: pair
-        },
-        defaults: {
-          price: Number(existence[0].price)
-        }
-      })
-      
-      if(created){
-        const symbolsDb= [symbol1, symbol2]
-        await pairDb.addSymbols(symbolsDb)
-      }
-      const [subscription, createds] = await Susbcription.findOrCreate({
-        where: {
-          userId : req.user.id,
-          pairId : pairDb.toJSON().id
-        },
-        defaults :{
-         risePrice: risePrice === undefined || risePrice < 0 ? 0 : risePrice,
-         fallPrice: fallPrice === undefined || fallPrice < 0 ? 0 : fallPrice,
-         alertOnFall: fallPrice === undefined || fallPrice <= 0 ? false : true,
-         alertOnRise: risePrice === undefined || risePrice <= 0 ? false : true
- 
-        }
-      }) 
-    if(!createds) return res.status(404).json({errorType:'subscriptionError', errorCode:'1230',errorMessage : 'Subscription already exists'})
-      await subscription.setUser(user)
-      await subscription.setPair(pairDb)
-      res.json(subscription)
-    }catch(err){
-    res.status(500).json(err)
-  }
-
-})*/
 
 rSubscription.post('/', isAuthenticated,async (req, res) => {
   try{
@@ -155,7 +99,16 @@ rSubscription.post('/', isAuthenticated,async (req, res) => {
         reversePair = symbol2.toJSON().symbol.toUpperCase() + symbol1.toJSON().symbol.toUpperCase()
         response = await axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=${reversePair}`)
       }catch(err){
-      return res.status(404).json({errorType:'subscriptionError', errorCode:'1420', errorMessage : 'Invalid Pair'})
+        await ErrorLog.create({
+          userId: req.user.id,
+          Method: Object.keys(req.route.methods)[0],
+          Route: JSON.stringify("subs"+req.route.path),
+          Body: JSON.stringify(req.body),
+          errorType:'subscriptionError', 
+          errorCode:'1420', 
+          errorMessage : 'Invalid Pair'
+      })
+        return res.status(404).json({errorType:'subscriptionError', errorCode:'1420', errorMessage : 'Invalid Pair'})
       }
     }
     pairApi = response.data
@@ -186,7 +139,19 @@ rSubscription.post('/', isAuthenticated,async (req, res) => {
  
         }
       }) 
-    if(!createds) return res.status(404).json({errorType:'subscriptionError', errorCode:'1230',errorMessage : 'Subscription already exists'})
+    if(!createds) {
+      await ErrorLog.create({
+        userId: req.user.id,
+        Method: Object.keys(req.route.methods)[0],
+        Route: JSON.stringify("subs"+req.route.path),
+        Body: JSON.stringify(req.body),
+        errorType:'subscriptionError', 
+        errorCode:'1230',
+        errorMessage : 'Subscription already exists'
+      })
+      return res.status(404).json({errorType:'subscriptionError', errorCode:'1230',errorMessage : 'Subscription already exists'})
+    }
+    
     await subscription.setUser(user)
     await subscription.setPair(pairDb)
     res.json(subscription)
@@ -201,7 +166,18 @@ rSubscription.put('/:id', isAuthenticated, async (req, res) => {
     let { symbol1Id, symbol2Id , risePrice, fallPrice } = req.body
     const symbol1 = await Symbol.findByPk(Number(symbol1Id))
     const symbol2 = await Symbol.findByPk(Number(symbol2Id))
-    if(!symbol1 || !symbol2 ) return res.status(404).json({errorType:'subscriptionError', errorCode:'1210', errorMessage: 'One of the symbols does not exists at the Symbols DB'})
+    if(!symbol1 || !symbol2 ){
+      await ErrorLog.create({
+        userId: req.user.id,
+        Method: Object.keys(req.route.methods)[0],
+        Route: JSON.stringify("subs"+req.route.path),
+        Body: JSON.stringify(req.body),
+        errorType:'subscriptionError', 
+        errorCode:'1210', 
+        errorMessage: 'One of the symbols does not exists at the Symbols DB'
+      })
+      return res.status(404).json({errorType:'subscriptionError', errorCode:'1210', errorMessage: 'One of the symbols does not exists at the Symbols DB'})
+    } 
     const pair = symbol1.toJSON().symbol.toUpperCase() + symbol2.toJSON().symbol.toUpperCase()
     let response;
     let pairApi;
@@ -213,7 +189,16 @@ rSubscription.put('/:id', isAuthenticated, async (req, res) => {
         reversePair = symbol2.toJSON().symbol.toUpperCase() + symbol1.toJSON().symbol.toUpperCase()
         response = await axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=${reversePair}`)
       }catch(err){
-      return res.status(404).json({errorType:'subscriptionError', errorCode:'1420', errorMessage : 'Invalid Pair'})
+        await ErrorLog.create({
+          userId: req.user.id,
+          Method: Object.keys(req.route.methods)[0],
+          Route: JSON.stringify("subs"+req.route.path),
+          Body: JSON.stringify(req.body),
+          errorType:'subscriptionError', 
+          errorCode:'1420', 
+          errorMessage : 'Invalid Pair'
+      })
+        return res.status(404).json({errorType:'subscriptionError', errorCode:'1420', errorMessage : 'Invalid Pair'})
       }
     }
     pairApi = response.data
@@ -239,8 +224,18 @@ rSubscription.put('/:id', isAuthenticated, async (req, res) => {
       }
     })
 
-    if(sub && subAntigua.toJSON().pairId !== sub.toJSON().pairId) return res.status(404).json({errorType:'subscriptionError', errorCode:'1230',errorMessage : 'Subscription already exists'})
-
+    if(sub && subAntigua.toJSON().pairId !== sub.toJSON().pairId){
+      await ErrorLog.create({
+        userId: req.user.id,
+        Method: Object.keys(req.route.methods)[0],
+        Route: JSON.stringify("subs"+req.route.path),
+        Body: JSON.stringify(req.body),
+        errorType:'subscriptionError', 
+        errorCode:'1230',
+        errorMessage : 'Subscription already exists'      
+      })
+      return res.status(404).json({errorType:'subscriptionError', errorCode:'1230',errorMessage : 'Subscription already exists'})
+    }
     await Susbcription.update({
       risePrice: risePrice === undefined || risePrice < 0 ? 0 : risePrice,
       fallPrice: fallPrice === undefined || fallPrice < 0 ? 0 : fallPrice,
@@ -258,7 +253,18 @@ rSubscription.put('/:id', isAuthenticated, async (req, res) => {
         id: req.params.id
       }
     })
-    if(!updated) return res.status(404).json({errorType:'subscriptionError', errorCode:'1250' ,errorMessage: 'There was a problem while updating the registry'})
+    if(!updated){
+      await ErrorLog.create({
+        userId: req.user.id,
+        Method: Object.keys(req.route.methods)[0],
+        Route: JSON.stringify("subs"+req.route.path),
+        Body: JSON.stringify(req.body),
+        errorType:'subscriptionError', 
+        errorCode:'1250' ,
+        errorMessage: 'There was a problem while updating the registry'      
+      })
+      return res.status(404).json({errorType:'subscriptionError', errorCode:'1250' ,errorMessage: 'There was a problem while updating the registry'})
+    }
     await updated.setPair(pairDb)
     res.json(updated)
     
@@ -269,17 +275,24 @@ rSubscription.put('/:id', isAuthenticated, async (req, res) => {
 
 rSubscription.delete('/:id', isAuthenticated,async (req, res) => { //Ruta para desuscribirse de una crypto que un usuario haya tenido como subscripcion
   try {
-    //let { symbols } = req.body
-    //const pair = symbols[0].toUpperCase() + symbols[1].toUpperCase()
-    //const pairDb = await Pair.findOne({where: {pair: pair}}) // buscar Pair en BD
-    //if(!pairDb) return res.status(404).json({msg: 'Pair does not exists'})
     const unsubscription = await Susbcription.destroy({
       where: {
         userId: req.user.id,
         id: req.params.id
       }
     })
-    if(!unsubscription) return res.status(401).json({errorType:'subscriptionError', errorCode:'1210', errorMessage: 'This subscription does not exists for this user'}) 
+    if(!unsubscription){
+      await ErrorLog.create({
+        userId: req.user.id,
+        Method: Object.keys(req.route.methods)[0],
+        Route: JSON.stringify("subs"+req.route.path),
+        Body: JSON.stringify(req.body),
+        errorType:'subscriptionError', 
+        errorCode:'1210', 
+        errorMessage: 'This subscription does not exists for this user'      
+      })
+      return res.status(401).json({errorType:'subscriptionError', errorCode:'1210', errorMessage: 'This subscription does not exists for this user'}) 
+    }
     res.json({message : 'Subscription eliminated'})
   }catch(err){
     res.status(500).json(err)
