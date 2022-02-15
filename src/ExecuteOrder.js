@@ -4,7 +4,6 @@ const axios = require('axios')
 const executeOrder = async(userId, orderId) => {
   try{
     const user = await User.findByPk(userId)
-    console.log(user)
     const order = await Order.findByPk(orderId)
     let orderJ = order.toJSON()
     const symbolBuy = await Symbol.findByPk(orderJ.idSymbolToBuy)
@@ -22,7 +21,6 @@ const executeOrder = async(userId, orderId) => {
         return console.log('pair Invalid')
       }
     }
-    console.log(pair.data, orderJ)
     if(orderJ.marketOrder){
       const transactionSell = await Transaction.create({
         withdraw: orderJ.amount,
@@ -30,6 +28,7 @@ const executeOrder = async(userId, orderId) => {
       })
       await user.addTransaction(transactionSell)
       await symbolSell.addTransaction(transactionSell)
+      await transactionSell.setOrder(order)
 
       const transactionBuy = await Transaction.create({
         withdraw:0,
@@ -38,6 +37,7 @@ const executeOrder = async(userId, orderId) => {
 
       await user.addTransaction(transactionBuy)
       await symbolBuy.addTransaction(transactionBuy)
+      await transactionBuy.setOrder(order)
       
       await order.update({
         status:1,
@@ -51,6 +51,7 @@ const executeOrder = async(userId, orderId) => {
       })
       await user.addTransaction(transactionSell)
       await symbolSell.addTransaction(transactionSell)
+      await transactionSell.setOrder(order)
 
       const transactionBuy = await Transaction.create({
         withdraw:0,
@@ -59,7 +60,8 @@ const executeOrder = async(userId, orderId) => {
 
       await user.addTransaction(transactionBuy)
       await symbolBuy.addTransaction(transactionBuy)
-      
+      await transactionBuy.setOrder(order)
+
       await order.update({
         status:1,
         sendOnPending: false,
@@ -72,6 +74,7 @@ const executeOrder = async(userId, orderId) => {
       })
       await user.addTransaction(transactionSell)
       await symbolSell.addTransaction(transactionSell)
+      await transactionSell.setOrder(order)
 
       const transactionBuy = await Transaction.create({
         withdraw:0,
@@ -80,7 +83,8 @@ const executeOrder = async(userId, orderId) => {
 
       await user.addTransaction(transactionBuy)
       await symbolBuy.addTransaction(transactionBuy)
-      
+      await transactionBuy.setOrder(order)
+
       await order.update({
         status:1,
         sendOnPending: false,
