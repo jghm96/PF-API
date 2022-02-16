@@ -80,12 +80,25 @@ order.get('/:id', isAuthenticated, async(req, res)=> {
   try{
     let { id } = req.params
     
-    const order = await Order.findOne({
+    let order = await Order.findOne({
       where: {
-        id,
+        id: req.params.id,
         userId: req.user.id
-      }
+      },
+      include:[
+        {
+          model: Symbol, 
+          as:'SymbolBuy', 
+          attributes:['symbol','image']
+        },
+        {
+          model:Symbol,
+          as:'SymbolSell',
+          attributes:['symbol','image']
+        }
+      ]
     })
+
     if(!order){
       await ErrorLog.create({
         userId: req.user.id,
@@ -97,6 +110,27 @@ order.get('/:id', isAuthenticated, async(req, res)=> {
         errorMessage:'Order not found for this user'
       })
       return res.status(404).json({errorType:'orderError', errorCode:'1310', errorMessage:'Order not found for this user'})
+    }
+    let or = order.toJSON()
+    let date = new Date(or.updatedAt)
+    let month = date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth()
+    order = {
+      id: or.id,
+      buyOrder: or.buyOrder,
+      marketOrder: or.marketOrder,
+      priceLimit: or.priceLimit,
+      status: or.status,
+      amount: or.amount,
+      confirmationRequeried: or.confirmationRequeried,
+      sendOnPending: or.sendOnPending,
+      sendOnFullfiled: or.sendOnFullfiled,
+      sendOnCanceled: or.sendOnCanceled,
+      userId: or.userId,
+      SymbolBuy: or.SymbolBuy,
+      idSymbolToBuy: or.idSymbolToBuy,
+      SymbolSell: or.SymbolSell,
+      idSymbolToSell: or.idSymbolToSell,
+      date: `${date.getFullYear()}/${month}/${date.getDate()}`
     }
     return res.json(order)
   }catch(err){
