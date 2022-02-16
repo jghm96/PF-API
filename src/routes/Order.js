@@ -258,7 +258,7 @@ order.post('/', isAuthenticated,async(req,res) => {
 
 order.put('/:id', isAuthenticated, async (req,res) => {
   try{
-    let {buyOrder, amount, marketOrder, priceLimit }= req.body
+    let {buyOrder, symbol1Id, symbol2Id, amount, marketOrder, priceLimit} = req.body    
     const order = await Order.findOne({
       where:{
         userId: req.user.id,
@@ -277,6 +277,87 @@ order.put('/:id', isAuthenticated, async (req,res) => {
         errorMessage:'Order not found or the order maybe it is fullfiled or canceled'
         })
       return res.status(404).json({errorType: 'orderError', errorCode:'1310', errorMessage:'Order not found or the order maybe it is fullfiled or canceled'})
+    }
+    let symbol1 = await Symbol.findByPk(symbol1Id)
+    let symbol2 = await Symbol.findByPk(symbol2Id)
+    let pair = symbol1.toJSON().symbol.toUpperCase() + symbol2.toJSON().symbol.toUpperCase()
+    let reversePair = null;
+    let pairValid;
+    try{
+      pairValid = (await axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=${pair}`)).data
+    }catch(e){
+      try{
+        reversePair = symbol2.toJSON().symbol.toUpperCase() + symbol1.toJSON().symbol.toUpperCase()
+        pairValid = (await axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=${reversePair}`)).data
+      }catch(e){
+        await ErrorLog.create({
+          userId: req.user.id,
+          Method: Object.keys(req.route.methods)[0],
+          Route: JSON.stringify("orders"+req.route.path),
+          Body: JSON.stringify(req.body),
+          errorType: 'orderError', 
+          errorCode:'1310', 
+          errorMessage:'Invalid Pair'
+        })
+        return res.status(404).json({errorType: 'orderError', errorCode:'1310', errorMessage:'Invalid Pair'})
+      }
+    }
+    const [pairDb,created] = await Pair.findOrCreate({
+      where: {
+        pair: pairValid.symbol
+      },
+      defaults: {
+        price: pairValid.price,
+      }
+    })
+    if(created){
+       if(reversePair){
+        await pairDb.setSymbol1(symbol2);
+        await pairDb.setSymbol2(symbol1);
+
+      }else{
+        await pairDb.setSymbol1(symbol1);
+        await pairDb.setSymbol2(symbol2);
+      }
+    }
+
+    if(buyOrder){
+      const balance = await getBalance(req.user.id, symbol2Id)
+      if(balance.balance >= amount){
+         await order.setSymbolSell(symbol2Id)
+         await order.setSymbolBuy(symbol1Id) 
+         await order.setPair(pairDb)
+      }else{
+         await ErrorLog.create({
+          userId: req.user.id,
+          Method: Object.keys(req.route.methods)[0],
+          Route: JSON.stringify("orders"+req.route.path),
+          Body: JSON.stringify(req.body),
+          errorType:'orderError', 
+          errorCode: '1340', 
+          errorMessage:'Insufficient balance'
+        })
+        return res.status(404).json({errorType:'orderError', errorCode: '1340', errorMessage:'Insufficient balance'})
+      }
+    }else{
+      const balance = await getBalance(req.user.id, symbol1Id)
+      if(balance.balance >= amount){
+         await order.setSymbolSell(symbol1Id)
+         await order.setSymbolBuy(symbol2Id) 
+         await order.setPair(pairDb)
+      }else{
+         await ErrorLog.create({
+          userId: req.user.id,
+          Method: Object.keys(req.route.methods)[0],
+          Route: JSON.stringify("orders"+req.route.path),
+          Body: JSON.stringify(req.body),
+          errorType:'orderError', 
+          errorCode: '1340', 
+          errorMessage:'Insufficient balance'
+        })
+        return res.status(404).json({errorType:'orderError', errorCode: '1340', errorMessage:'Insufficient balance'})
+      }
+
     }
     await order.update({
       buyOrder,
