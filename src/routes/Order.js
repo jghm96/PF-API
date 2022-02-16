@@ -168,6 +168,7 @@ order.post('/', isAuthenticated,async(req,res) => {
         await newOrder.setSymbolSell(symbol2)
         await newOrder.setSymbolBuy(symbol1)
         await newOrder.setUser(user)
+        await newOrder.setPair(pairDb)
         
         return res.json(newOrder)
       }else{
@@ -200,6 +201,7 @@ order.post('/', isAuthenticated,async(req,res) => {
         await newOrder.setSymbolSell(symbol1)
         await newOrder.setSymbolBuy(symbol2)
         await newOrder.setUser(user)
+        await newOrder.setPair(pairDb)
          
         return res.json(newOrder)
       }else{

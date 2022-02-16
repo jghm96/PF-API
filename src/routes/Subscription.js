@@ -12,23 +12,29 @@ rSubscription.get('/', isAuthenticated ,async (req, res) => {
       where:{
         userId: req.user.id
       },
-      include: [{model:Pair, required: true, attributes: ['id','price', 'pair'], include: [{model: Symbol, as:'Symbol1', attributes:['id','symbol','image']}, {model: Symbol, as:'Symbol2', attributes:['id','symbol','image']}]}]
+      include: [{model:Pair, required: true, attributes: ['id','price','pair','symbol1Id']},
+        {model: Symbol, as:'Symbol1', attributes:['id','symbol','image']},
+        {model: Symbol, as:'Symbol2', attributes:['id','symbol','image']}]
     })
     let json = subscriptions.map(s => s.toJSON())
-    const format = json.map(s => {
+    let format = json.map(s => {
+      let price = s.pair.symbol1Id != s.Symbol1.id ? (1/s.pair.price): Number(s.pair.price)
+
       return {
         id: s.id,
         risePrice: s.risePrice,
         fallPrice: s.fallPrice,
         alertOnRise: s.alertOnRise,
         alertOnFall: s.alertOnFall,
-        pair: [s.pair.pair, s.pair.price],
-        symbol1Id: s.pair.Symbol1.id,
-        symbol1: [s.pair.Symbol1.symbol, s.pair.Symbol1.image],
-        symbol2Id: s.pair.Symbol2.id,
-        symbol2: [s.pair.Symbol2.symbol, s.pair.Symbol2.image]
+        pair: s.pair.pair,
+        price:  price,
+        symbol1Id: s.Symbol1.id,
+        symbol1: [s.Symbol1.symbol, s.Symbol1.image],
+        symbol2Id: s.Symbol2.id,
+        symbol2: [s.Symbol2.symbol, s.Symbol2.image]
       }
     })
+    format = format.sort((a,b)=>a.id-b.id)
     res.json(format)
   
   }catch(err){
@@ -124,14 +130,21 @@ rSubscription.post('/', isAuthenticated,async (req, res) => {
     })
     
     if(created){
-      await pairDb.setSymbol1(symbol1);
-      await pairDb.setSymbol2(symbol2)
+      if(reversePair){
+        await pairDb.setSymbol1(symbol2);
+        await pairDb.setSymbol2(symbol1);
+
+      }else{
+        await pairDb.setSymbol1(symbol1);
+        await pairDb.setSymbol2(symbol2);
+      }
     }
-    
+  
     const [subscription, createds] = await Susbcription.findOrCreate({
         where: {
           userId : req.user.id,
-          pairId : pairDb.toJSON().id
+          symbol1Id: symbol1.toJSON().id,
+          symbol2Id: symbol2.toJSON().id
         },
         defaults :{
          risePrice: risePrice === undefined || risePrice < 0 ? 0 : risePrice,
@@ -156,6 +169,8 @@ rSubscription.post('/', isAuthenticated,async (req, res) => {
     
     await subscription.setUser(user)
     await subscription.setPair(pairDb)
+    await subscription.setSymbol1(symbol1)
+    await subscription.setSymbol2(symbol2)
     res.json(subscription)
 
   }catch(err){
@@ -214,19 +229,25 @@ rSubscription.put('/:id', isAuthenticated, async (req, res) => {
     })
     
     if(created){
-      await pairDb.setSymbol1(symbol1);
-      await pairDb.setSymbol2(symbol2)
+      if(reversePair){
+        await pairDb.setSymbol1(symbol2);
+        await pairDb.setSymbol2(symbol1);
+      }else{
+        await pairDb.setSymbol1(symbol1);
+        await pairDb.setSymbol2(symbol2);
+      }
     }
     
     const subAntigua = await Susbcription.findByPk(req.params.id)
     const sub = await Susbcription.findOne({
       where:{
         userId: req.user.id,
-        pairId: pairDb.toJSON().id
+        symbol1Id: symbol1.toJSON().id,
+        symbol2Id: symbol2.toJSON().id
       }
     })
 
-    if(sub && subAntigua.toJSON().pairId !== sub.toJSON().pairId){
+    if(sub && subAntigua.toJSON().symbol1Id !== sub.toJSON().symbol1Id){
       await ErrorLog.create({
         userId: req.user.id,
         Method: Object.keys(req.route.methods)[0],
@@ -238,6 +259,11 @@ rSubscription.put('/:id', isAuthenticated, async (req, res) => {
       })
       return res.status(404).json({errorType:'subscriptionError', errorCode:'1230',errorMessage : 'Subscription already exists'})
     }
+    if(subAntigua.toJSON().pairId !== pairDb.toJSON().id){
+      await subAntigua.setPair(pairDb)
+    }
+    await subAntigua.setSymbol1(symbol1)
+    await subAntigua.setSymbol2(symbol2)
     await Susbcription.update({
       risePrice: risePrice === undefined || risePrice < 0 ? 0 : risePrice,
       fallPrice: fallPrice === undefined || fallPrice < 0 ? 0 : fallPrice,
