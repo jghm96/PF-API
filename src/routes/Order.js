@@ -13,6 +13,10 @@ order.get('/', isAuthenticated, async (req,res) =>{
       },
       include:[
         {
+          model:Pair,
+          attributes:['price','symbol1Id']
+        },
+        {
           model: Symbol, 
           as:'SymbolBuy', 
           attributes:['symbol','image']
@@ -24,10 +28,10 @@ order.get('/', isAuthenticated, async (req,res) =>{
         }
       ]
     })
-    
     orders = orders.map(o => {
       let or = o.toJSON()
       let date = new Date(or.updatedAt)
+      console.log(or.pair.symbol1Id, or.idSymbolToSell)
       let month = date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth()
       return {
         id: or.id,
@@ -37,6 +41,7 @@ order.get('/', isAuthenticated, async (req,res) =>{
         status: or.status,
         amount: or.amount,
         confirmationRequeried: or.confirmationRequeried,
+        price: or.pair.symbol1Id !== or.idSymbolToSell ? (1/or.pair.price) : Number(or.pair.price),
         sendOnPending: or.sendOnPending,
         sendOnFullfiled: or.sendOnFullfiled,
         sendOnCanceled: or.sendOnCanceled,
@@ -187,7 +192,8 @@ order.post('/', isAuthenticated,async(req,res) => {
     
     if(buyOrder){
       const cantidad = await getBalance(req.user.id, symbol2Id)
-      if(cantidad && cantidad.balance >= amount){
+      let amountTotal = reversePair ? Number(amount*(1/pairValid.price)) : Number(amount*pairValid.price)
+      if(cantidad && cantidad.balance >= amountTotal){
         const newOrder = await Order.create({
             buyOrder, 
             amount, 

@@ -23,7 +23,7 @@ const executeOrder = async(userId, orderId) => {
     }
     if(orderJ.marketOrder){
       const transactionSell = await Transaction.create({
-        withdraw: orderJ.amount,
+        withdraw: orderJ.buyOrder ? !pairInverso ? orderJ.amount*(1/pair.data.price) : orderJ.amount * pair.data.price: orderJ.amount,
         deposit:0
       })
       await user.addTransaction(transactionSell)
@@ -32,7 +32,7 @@ const executeOrder = async(userId, orderId) => {
 
       const transactionBuy = await Transaction.create({
         withdraw:0,
-        deposit: pairInverso !== null ? (orderJ.amount/pair.data.price) : (orderJ.amount * pair.data.price)
+        deposit: !orderJ.buyOrder ? pairInverso !== null ? (orderJ.amount/pair.data.price) : (orderJ.amount * pair.data.price) : orderJ.amount
       })
 
       await user.addTransaction(transactionBuy)
@@ -46,7 +46,7 @@ const executeOrder = async(userId, orderId) => {
       })
     }else if(order.buyOrder && orderJ.priceLimit > pair.data.price){
       const transactionSell = await Transaction.create({
-        withdraw: orderJ.amount,
+        withdraw: orderJ.buyOrder ? !pairInverso ? orderJ.amount*(1/pair.data.price) : orderJ.amount * pair.data.price: orderJ.amount,
         deposit:0
       })
       await user.addTransaction(transactionSell)
@@ -55,7 +55,7 @@ const executeOrder = async(userId, orderId) => {
 
       const transactionBuy = await Transaction.create({
         withdraw:0,
-        deposit: pairInverso ? (orderJ.amount/pair.data.price) : (orderJ.amount * pair.data.price)
+        deposit: !orderJ.buyOrder ? pairInverso !== null ? (orderJ.amount/pair.data.price) : (orderJ.amount * pair.data.price) : orderJ.amount      
       })
 
       await user.addTransaction(transactionBuy)
@@ -69,7 +69,7 @@ const executeOrder = async(userId, orderId) => {
       })
     }else if(!order.buyOrder && orderJ.priceLimit < pair.data.price){
       const transactionSell = await Transaction.create({
-        withdraw: orderJ.amount,
+        withdraw: orderJ.buyOrder ? !pairInverso ? orderJ.amount*(1/pair.data.price) : orderJ.amount * pair.data.price: orderJ.amount,
         deposit:0
       })
       await user.addTransaction(transactionSell)
@@ -78,7 +78,7 @@ const executeOrder = async(userId, orderId) => {
 
       const transactionBuy = await Transaction.create({
         withdraw:0,
-        deposit: pairInverso ? (orderJ.amount/pair.data.price) : (orderJ.amount * pair.data.price)
+        deposit: !orderJ.buyOrder ? pairInverso !== null ? (orderJ.amount/pair.data.price) : (orderJ.amount * pair.data.price) : orderJ.amount 
       })
 
       await user.addTransaction(transactionBuy)
