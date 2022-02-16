@@ -44,7 +44,7 @@ const executeOrder = async(userId, orderId) => {
         sendOnPending: false,
         sendOnFullfiled: true
       })
-    }else if(order.buyOrder && orderJ.priceLimit < pair.data.price){
+    }else if(order.buyOrder && orderJ.priceLimit > pair.data.price){
       const transactionSell = await Transaction.create({
         withdraw: orderJ.amount,
         deposit:0
@@ -67,7 +67,7 @@ const executeOrder = async(userId, orderId) => {
         sendOnPending: false,
         sendOnFullfiled: true
       })
-    }else if(!order.buyOrder && orderJ.priceLimit > pair.data.price){
+    }else if(!order.buyOrder && orderJ.priceLimit < pair.data.price){
       const transactionSell = await Transaction.create({
         withdraw: orderJ.amount,
         deposit:0
