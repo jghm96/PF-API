@@ -66,8 +66,8 @@ portfolio.get("/", isAuthenticated, async (req, res) => { // Permite ver el esta
                         'balance': historicalBySymbol[k].reduce((a, b) => a + b, 0),
                         'image': images[k],
                         'idSymbol':symbols[k],
-                        //'inUsdt': k === 'usdt' ? historicalBySymbol[k].reduce((a, b) => a + b, 0) : (pairs.filter(p => p.symbol === pairSymbol))[0] ? (pairs.filter(p => p.symbol === pairSymbol))[0].price * historicalBySymbol[k].reduce((a, b) => a + b, 0) : '',
-                        //'inBtc': k === 'usdt' ? (historicalBySymbol[k].reduce((a, b) => a + b, 0)) * usdtToBtc : (pairs.filter(p => p.symbol === pairSymbol))[0] ? ((pairs.filter(p => p.symbol === pairSymbol))[0].price) * usdtToBtc * historicalBySymbol[k].reduce((a, b) => a + b, 0) : '',
+                        'inUsdt': k === 'usdt' ? historicalBySymbol[k].reduce((a, b) => a + b, 0) : (pairs.filter(p => p.symbol === pairSymbol))[0] ? (pairs.filter(p => p.symbol === pairSymbol))[0].price * historicalBySymbol[k].reduce((a, b) => a + b, 0) : '',
+                        'inBtc': k === 'usdt' ? (historicalBySymbol[k].reduce((a, b) => a + b, 0)) * usdtToBtc : (pairs.filter(p => p.symbol === pairSymbol))[0] ? ((pairs.filter(p => p.symbol === pairSymbol))[0].price) * usdtToBtc * historicalBySymbol[k].reduce((a, b) => a + b, 0) : '',
                     }
                 }
             });
