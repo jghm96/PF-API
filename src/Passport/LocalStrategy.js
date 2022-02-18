@@ -21,3 +21,5 @@ passport.use('local', new localStrategy({
    }
    return done(null,user);
 }))
+
+module.exports = passport
