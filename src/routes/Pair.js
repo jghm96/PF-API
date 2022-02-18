@@ -6,6 +6,9 @@ const axios = require('axios')
 /*------------------Imports----------------------*/
 
 const pair = Router()
+
+
+
 pair.get('/valid', async (req, res) => {
   try{
     let { symbol1Id, symbol2Id } = req.query
@@ -21,18 +24,28 @@ pair.get('/valid', async (req, res) => {
     let pair = symbol1.toJSON().symbol.toUpperCase() + symbol2.toJSON().symbol.toUpperCase()
     let reversePair = null ;
     let pairValid;
+    let pairChart;
     try{
       pairValid = await axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=${pair}`)
+      pairChart = (await axios.get(`https://api.binance.com/api/v3/klines?symbol=${pair}&interval=1d&limit=100`)).data
     }catch(err){
       try{
         reversePair = symbol2.toJSON().symbol.toUpperCase() + symbol1.toJSON().symbol.toUpperCase()
         pairValid = await axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=${reversePair}`)
+        pairChart = (await axios.get(`https://api.binance.com/api/v3/klines?symbol=${reversePair}&interval=1d&limit=100`)).data
       }catch(err){
         return res.status(404).json({errorType:'pairError',errorCode:'1510',errorMessage:'Invalid Pair'})
       }
     }
+    let array = pairChart.map(a => {
+      return {
+        date: new Date(a[0]).toISOString().split('T')[0],
+        value: reversePair ? (1/a[1]) : Number(a[1])
+      }
+    })
+
     let price = reversePair ? (1/pairValid.data.price) : Number(pairValid.data.price)
-    res.json({message: 'Pair valid', price: price})
+    res.json({message: 'Pair valid', price: price, array: array})
   }catch(err){
     res.status(500).json(err)
   }
