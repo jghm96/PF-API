@@ -18,17 +18,18 @@ order.get('/', isAuthenticated, async (req,res) =>{
         },
         {
           model: Symbol, 
-          as:'SymbolBuy', 
+          as:'SymbolSell', 
           attributes:['symbol','image']
         },
         {
           model:Symbol,
-          as:'SymbolSell',
+          as:'SymbolBuy',
           attributes:['symbol','image']
         }
       ]
     })
     orders = orders.map(o => {
+      console.log(o.toJSON())
       let or = o.toJSON()
       let date = new Date(or.updatedAt)
       console.log(or.pair.symbol1Id, or.idSymbolToSell)
@@ -46,10 +47,10 @@ order.get('/', isAuthenticated, async (req,res) =>{
         sendOnFullfiled: or.sendOnFullfiled,
         sendOnCanceled: or.sendOnCanceled,
         userId: or.userId,
-        SymbolBuy: or.SymbolBuy,
-        idSymbolToBuy: or.idSymbolToBuy,
-        SymbolSell: or.SymbolSell,
-        idSymbolToSell: or.idSymbolToSell,
+        symbol1: !or.buyOrder ? or.SymbolSell : or.SymbolBuy,
+        idSymbol1: !or.buyOrder ? or.idSymbolToSell : or.idSymbolToBuy,
+        symbol2: !or.buyOrder ? or.SmybolBuy : or.SymbolSell,
+        idSymbol2: !or.buyOrder ? or.idSymbolToBuy : or.idSymbolToSell,
         date: `${date.getFullYear()}/${month}/${date.getDate()}`
       }
     })
@@ -131,10 +132,10 @@ order.get('/:id', isAuthenticated, async(req, res)=> {
       sendOnFullfiled: or.sendOnFullfiled,
       sendOnCanceled: or.sendOnCanceled,
       userId: or.userId,
-      SymbolBuy: or.SymbolBuy,
-      idSymbolToBuy: or.idSymbolToBuy,
-      SymbolSell: or.SymbolSell,
-      idSymbolToSell: or.idSymbolToSell,
+      symbol1: !or.buyOrder ? or.SymbolSell : or.SymbolBuy,
+      idSymbol1: !or.buyOrder ? or.idSymbolToSell : or.idSymbolToBuy,
+      symbol2: !or.buyOrder ? or.SmybolBuy : or.SymbolSell,
+      idSymbol2: !or.buyOrder ? or.idSymbolToBuy : or.idSymbolToSell,
       date: `${date.getFullYear()}/${month}/${date.getDate()}`
     }
     return res.json(order)
@@ -421,7 +422,7 @@ order.delete('/:id', isAuthenticated, async (req,res)=>{
     })
     res.json({message: 'Order eliminated'})
   }catch(err){
-
+    res.status(500).json(err)
   }
 })
 
