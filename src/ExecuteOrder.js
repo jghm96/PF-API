@@ -1,5 +1,6 @@
 const { User, Order, Symbol, Transaction } = require('./db')
 const axios = require('axios')
+const sendEmail = require('./Mail')
 
 const executeOrder = async(userId, orderId) => {
   try{
@@ -44,6 +45,22 @@ const executeOrder = async(userId, orderId) => {
         sendOnPending: false,
         sendOnFullfiled: true
       })
+      const subject = `Transactions for the Order #${orderJ.id}`
+      const html = `
+                  <div>
+                    <h2>Transaction Sell</h2>
+                    <ul>
+                      <li>Selled coin: ${symbolSell.toJSON().symbol}</li>
+                      <li>Amount: ${transactionSell.toJSON().withdraw}</li>
+                    </ul>
+                    <h2>Transaction Buy</h2>
+                    <ul>
+                      <li>Bought coin: ${symbolBuy.toJSON().symbol}</li>
+                      <li>Amount: ${transactionBuy.toJSON().deposit}</li>
+                    </ul>
+                  </div>
+      `
+      await sendEmail(user.toJSON().email, subject, html)
     }else if(order.buyOrder && orderJ.priceLimit > pair.data.price){
       const transactionSell = await Transaction.create({
         withdraw: orderJ.buyOrder ? !pairInverso ? orderJ.amount*(1/pair.data.price) : orderJ.amount * pair.data.price: orderJ.amount,
@@ -67,6 +84,23 @@ const executeOrder = async(userId, orderId) => {
         sendOnPending: false,
         sendOnFullfiled: true
       })
+      const subject = `Transactions for the Order #${orderJ.id}`
+      const html = `
+                  <div>
+                    <h2>Transaction Sell</h2>
+                    <ul>
+                      <li>Selled coin: ${symbolSell.toJSON().symbol}</li>
+                      <li>Amount: ${transactionSell.toJSON().withdraw}</li>
+                    </ul>
+                    <h2>Transaction Buy</h2>
+                    <ul>
+                      <li>Bought coin: ${symbolBuy.toJSON().symbol}</li>
+                      <li>Amount: ${transactionBuy.toJSON().deposit}</li>
+                    </ul>
+                  </div>
+      `
+      await sendEmail(user.toJSON().email, subject, html)
+
     }else if(!order.buyOrder && orderJ.priceLimit < pair.data.price){
       const transactionSell = await Transaction.create({
         withdraw: orderJ.buyOrder ? !pairInverso ? orderJ.amount*(1/pair.data.price) : orderJ.amount * pair.data.price: orderJ.amount,
@@ -90,7 +124,22 @@ const executeOrder = async(userId, orderId) => {
         sendOnPending: false,
         sendOnFullfiled: true
       })
-
+      const subject = `Transactions for the Order #${orderJ.id}`
+      const html = `
+                  <div>
+                    <h2>Transaction Sell</h2>
+                    <ul>
+                      <li>Selled coin: ${symbolSell.toJSON().symbol}</li>
+                      <li>Amount: ${transactionSell.toJSON().withdraw}</li>
+                    </ul>
+                    <h2>Transaction Buy</h2>
+                    <ul>
+                      <li>Bought coin: ${symbolBuy.toJSON().symbol}</li>
+                      <li>Amount: ${transactionBuy.toJSON().deposit}</li>
+                    </ul>
+                  </div>
+      `
+      await sendEmail(user.toJSON().email, subject, html)
     }
   }
   catch(e){
