@@ -134,7 +134,7 @@ order.get('/:id', isAuthenticated, async(req, res)=> {
       userId: or.userId,
       symbol1: !or.buyOrder ? or.SymbolSell : or.SymbolBuy,
       idSymbol1: !or.buyOrder ? or.idSymbolToSell : or.idSymbolToBuy,
-      symbol2: !or.buyOrder ? or.SmybolBuy : or.SymbolSell,
+      symbol2: !or.buyOrder ? or.SymbolBuy : or.SymbolSell,
       idSymbol2: !or.buyOrder ? or.idSymbolToBuy : or.idSymbolToSell,
       date: `${date.getFullYear()}/${month}/${date.getDate()}`
     }
