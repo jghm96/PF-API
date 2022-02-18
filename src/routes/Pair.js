@@ -109,3 +109,4 @@ pair.get('/price/:id', async (req, res) => {
   }
 })
 
+module.exports = pair
