@@ -50,7 +50,7 @@ const executeOrder = async(userId, orderId) => {
       const subject = `Transactions for the Order #${orderJ.id}`
       const html = `
                   <div>
-                    <h1>Your ${symbolBuyJ.symbol}/${symbolSellJ.symbol} order for ${transactionBuy.toJSON().deposit} ${symbolBuyJ.symbol} was executed properly</h1>
+                    <h1>Your ${symbolBuyJ.symbol}/${symbolSellJ.symbol} ${orderJ.buyOrder ? 'buy': 'sell'} order for ${transactionBuy.toJSON().deposit} ${symbolBuyJ.symbol} was executed properly</h1>
                     <h2>Transaction Sell</h2>
                     <ul>
                       <li>Selled coin: ${symbolSellJ.symbol}</li>
@@ -61,7 +61,7 @@ const executeOrder = async(userId, orderId) => {
                       <li>Bought coin: ${symbolBuyJ.symbol}</li>
                       <li>Amount: ${transactionBuy.toJSON().deposit}</li>
                     </ul>
-                    <h3>Price of the pair when the order was executed: ${pairInverso ? (1/pair.data.price): Number(pair.data.price)} </h3>
+                    <h3>Price of the pair when the order was executed: ${!pairInverso ? (1/pair.data.price): Number(pair.data.price)} </h3>
                   </div>
       `
       await sendEmail(user.toJSON().email, subject, html)
@@ -93,7 +93,7 @@ const executeOrder = async(userId, orderId) => {
       const subject = `Transactions for the Order #${orderJ.id}`
       const html = `
                   <div>
-                    <h1>Your ${symbolBuyJ.symbol}/${symbolSellJ.symbol} order for ${transactionBuy.toJSON().deposit} ${symbolBuyJ.symbol} was executed properly</h1>
+                    <h1>Your ${symbolBuyJ.symbol}/${symbolSellJ.symbol} ${orderJ.buyOrder ? 'buy': 'sell'} order for ${transactionBuy.toJSON().deposit} ${symbolBuyJ.symbol} was executed properly</h1>
                     <h2>Transaction Sell</h2>
                     <ul>
                       <li>Selled coin: ${symbolSellJ.symbol}</li>
@@ -104,7 +104,7 @@ const executeOrder = async(userId, orderId) => {
                       <li>Bought coin: ${symbolBuyJ.symbol}</li>
                       <li>Amount: ${transactionBuy.toJSON().deposit}</li>
                     </ul>
-                    <h3>Price of the pair when the order was executed: ${pairInverso ? (1/pair.data.price): Number(pair.data.price)} </h3>
+                    <h3>Price of the pair when the order was executed: ${!pairInverso ? (1/pair.data.price): Number(pair.data.price)} </h3>
                   </div>
       `
       await sendEmail(user.toJSON().email, subject, html)
@@ -137,7 +137,7 @@ const executeOrder = async(userId, orderId) => {
       const subject = `Transactions for the Order #${orderJ.id}`
       const html = `
                   <div>
-                    <h1>Your ${symbolBuyJ.symbol}/${symbolSellJ.symbol} order for ${transactionBuy.toJSON().deposit} ${symbolBuyJ.symbol} was executed properly</h1>
+                    <h1>Your ${symbolBuyJ.symbol}/${symbolSellJ.symbol} ${orderJ.buyOrder ? 'buy': 'sell'} order for ${transactionBuy.toJSON().deposit} ${symbolBuyJ.symbol} was executed properly</h1>
                     <h2>Transaction Sell</h2>
                     <ul>
                       <li>Selled coin: ${symbolSellJ.symbol}</li>
@@ -148,7 +148,7 @@ const executeOrder = async(userId, orderId) => {
                       <li>Bought coin: ${symbolBuyJ.symbol}</li>
                       <li>Amount: ${transactionBuy.toJSON().deposit}</li>
                     </ul>
-                    <h3>Price of the pair when the order was executed: ${pairInverso ? (1/pair.data.price): Number(pair.data.price)} </h3>
+                    <h3>Price of the pair when the order was executed: ${!pairInverso ? (1/pair.data.price): Number(pair.data.price)} </h3>
                   </div>
       `
       await sendEmail(user.toJSON().email, subject, html)
