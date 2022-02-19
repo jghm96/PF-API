@@ -75,7 +75,7 @@ order.get('/', isAuthenticated, async (req,res) =>{
         return diato - fecha >= 0
       })
     }    
-    orders = orders.sort((a,b) => a.id - b.id )
+    orders = orders.length ? (orders.sort((a,b) => a.id - b.id )).reverse() : orders
     res.json(orders)
   }catch(err){
     res.status(500).json(err)

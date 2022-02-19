@@ -65,7 +65,7 @@ transactions.get("/", isAuthenticated, async (req, res) => { // Permite ver el e
                     'time': `${date.getHours().toString()}:${minutes}`  
                 }
             })
-            h = h.length ? h.sort((a,b) => a.orderId - b.orderId) : []
+            h = h.length ? (h.sort((a,b) => a.orderId - b.orderId)).reverse() : []
             res.json(h);
         }
         // All transactions podria servir para hacer un movimientos historicos de la cuenta
