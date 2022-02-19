@@ -6,14 +6,12 @@ const email = require('./Mail.js')
 
 module.exports = cron.schedule('* * * * *', async () => {
     const response = await axios.get(`${process.env.SERVER_URL}/pair`)
-    console.log('Holsa')
     let subscriptionsReview =  await Susbcription.findAll({where: {
         [Op.or] : [{alertOnRise: true}, {alertOnFall: true}],
         },
         include: [{model: Pair}]
     })
     subscriptionsReview = subscriptionsReview.map((s) => s.toJSON() )
-    console.log(subscriptionsReview)
     subscriptionsReview.forEach(async s => {
         //let pair = response.data.filter(sub => sub.id === s.pairId)
         if(s.alertOnRise){
