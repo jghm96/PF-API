@@ -45,19 +45,23 @@ const executeOrder = async(userId, orderId) => {
         sendOnPending: false,
         sendOnFullfiled: true
       })
+      symbolSellJ = symbolSell.toJSON()
+      symbolBuyJ = symbolBuy.toJSON()
       const subject = `Transactions for the Order #${orderJ.id}`
       const html = `
                   <div>
+                    <h1>Your ${symbolBuyJ.symbol}/${symbolSellJ.symbol} order for ${transactionBuy.toJSON().deposit} ${symbolBuyJ.symbol} was executed properly</h1>
                     <h2>Transaction Sell</h2>
                     <ul>
-                      <li>Selled coin: ${symbolSell.toJSON().symbol}</li>
+                      <li>Selled coin: ${symbolSellJ.symbol}</li>
                       <li>Amount: ${transactionSell.toJSON().withdraw}</li>
                     </ul>
                     <h2>Transaction Buy</h2>
                     <ul>
-                      <li>Bought coin: ${symbolBuy.toJSON().symbol}</li>
+                      <li>Bought coin: ${symbolBuyJ.symbol}</li>
                       <li>Amount: ${transactionBuy.toJSON().deposit}</li>
                     </ul>
+                    <h3>Price of the pair when the order was executed: ${pairInverso ? (1/pair.data.price): Number(pair.data.price)} </h3>
                   </div>
       `
       await sendEmail(user.toJSON().email, subject, html)
@@ -84,19 +88,23 @@ const executeOrder = async(userId, orderId) => {
         sendOnPending: false,
         sendOnFullfiled: true
       })
+      symbolSellJ = symbolSell.toJSON()
+      symbolBuyJ = symbolBuy.toJSON()
       const subject = `Transactions for the Order #${orderJ.id}`
       const html = `
                   <div>
+                    <h1>Your ${symbolBuyJ.symbol}/${symbolSellJ.symbol} order for ${transactionBuy.toJSON().deposit} ${symbolBuyJ.symbol} was executed properly</h1>
                     <h2>Transaction Sell</h2>
                     <ul>
-                      <li>Selled coin: ${symbolSell.toJSON().symbol}</li>
+                      <li>Selled coin: ${symbolSellJ.symbol}</li>
                       <li>Amount: ${transactionSell.toJSON().withdraw}</li>
                     </ul>
                     <h2>Transaction Buy</h2>
                     <ul>
-                      <li>Bought coin: ${symbolBuy.toJSON().symbol}</li>
+                      <li>Bought coin: ${symbolBuyJ.symbol}</li>
                       <li>Amount: ${transactionBuy.toJSON().deposit}</li>
                     </ul>
+                    <h3>Price of the pair when the order was executed: ${pairInverso ? (1/pair.data.price): Number(pair.data.price)} </h3>
                   </div>
       `
       await sendEmail(user.toJSON().email, subject, html)
@@ -124,19 +132,23 @@ const executeOrder = async(userId, orderId) => {
         sendOnPending: false,
         sendOnFullfiled: true
       })
+      symbolSellJ = symbolSell.toJSON()
+      symbolBuyJ = symbolBuy.toJSON()
       const subject = `Transactions for the Order #${orderJ.id}`
       const html = `
                   <div>
+                    <h1>Your ${symbolBuyJ.symbol}/${symbolSellJ.symbol} order for ${transactionBuy.toJSON().deposit} ${symbolBuyJ.symbol} was executed properly</h1>
                     <h2>Transaction Sell</h2>
                     <ul>
-                      <li>Selled coin: ${symbolSell.toJSON().symbol}</li>
+                      <li>Selled coin: ${symbolSellJ.symbol}</li>
                       <li>Amount: ${transactionSell.toJSON().withdraw}</li>
                     </ul>
                     <h2>Transaction Buy</h2>
                     <ul>
-                      <li>Bought coin: ${symbolBuy.toJSON().symbol}</li>
+                      <li>Bought coin: ${symbolBuyJ.symbol}</li>
                       <li>Amount: ${transactionBuy.toJSON().deposit}</li>
                     </ul>
+                    <h3>Price of the pair when the order was executed: ${pairInverso ? (1/pair.data.price): Number(pair.data.price)} </h3>
                   </div>
       `
       await sendEmail(user.toJSON().email, subject, html)
