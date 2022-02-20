@@ -43,7 +43,7 @@ module.exports = cron.schedule('* * * * *', async () => {
             }
         }
         if(s.alertOnFall){
-            if(s.fallPrice >= pair[0].price ){
+            if(s.fallPrice >= s.pair.price ){
                 let alertOnFall= false;
                 let symbol1 = await Symbol.findByPk(s.symbol1Id)
                 let symbol2 = await Symbol.findByPk(s.symbol2Id)
