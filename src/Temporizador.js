@@ -52,7 +52,7 @@ module.exports = cron.schedule('* * * * *', async () => {
                 const user = await User.findByPk(s.userId)
                 const subject = `Fall alarm triggered for ${symbol1.symbol}`
                 const sendHtml = `<div>
-                    <h1>Your rise alarm for ${symbol1.symbol} vs ${symbol2.symbol} was triggered at ${s.pair.symbol1Id === symbol1.id ? s.pair.price : (1/s.pair.price)}</h1>
+                    <h1>Your fall alarm for ${symbol1.symbol} vs ${symbol2.symbol} was triggered at ${s.pair.symbol1Id === symbol1.id ? s.pair.price : (1/s.pair.price)}</h1>
                     <h3>Your settings</h3>
                     <ul>
                         <li>risePrice: ${s.risePrice}</li>
