@@ -29,10 +29,8 @@ order.get('/', isAuthenticated, async (req,res) =>{
       ]
     })
     orders = orders.map(o => {
-      console.log(o.toJSON())
       let or = o.toJSON()
       let date = new Date(or.updatedAt)
-      console.log(or.pair.symbol1Id, or.idSymbolToSell)
       let month = date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth()
       return {
         id: or.id,
@@ -47,6 +45,7 @@ order.get('/', isAuthenticated, async (req,res) =>{
         sendOnFullfiled: or.sendOnFullfiled,
         sendOnCanceled: or.sendOnCanceled,
         userId: or.userId,
+        updatedAt: or.updatedAt,
         symbol1: !or.buyOrder ? or.SymbolSell : or.SymbolBuy,
         idSymbol1: !or.buyOrder ? or.idSymbolToSell : or.idSymbolToBuy,
         symbol2: !or.buyOrder ? or.SymbolBuy : or.SymbolSell,
@@ -63,7 +62,7 @@ order.get('/', isAuthenticated, async (req,res) =>{
       let dia = new Date(date[0],(date[1]-1),date[2])
       orders = orders.filter(o =>{
         let fecha = new Date(o.updatedAt)
-        return fecha - dia > 0
+        return fecha - dia >= 0
       })
     }
 
@@ -72,9 +71,9 @@ order.get('/', isAuthenticated, async (req,res) =>{
       let diato = new Date(dateto[0],dateto[1]-1, dateto[2])
       orders = orders.filter(o => {
         let fecha = new Date(o.updatedAt)
-        return diato - fecha >= 0
+        return fecha - diato < 86400000
       })
-    }    
+    }
     orders = orders.length ? (orders.sort((a,b) => a.id - b.id )).reverse() : orders
     res.json(orders)
   }catch(err){
