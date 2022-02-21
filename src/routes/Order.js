@@ -40,7 +40,7 @@ order.get('/', isAuthenticated, async (req,res) =>{
         status: or.status,
         amount: or.amount,
         confirmationRequeried: or.confirmationRequeried,
-        price: or.pair.symbol1Id !== or.idSymbolToSell ? (1/or.pair.price) : Number(or.pair.price),
+        price: or.pair.symbol1Id !== or.idSymbolToSell ? (or.buyOrder ? Number(or.pair.price) : (1/or.pair.price)) : (or.buyOrder ? (1/or.pair.price) : Number(or.pair.price)),
         sendOnPending: or.sendOnPending,
         sendOnFullfiled: or.sendOnFullfiled,
         sendOnCanceled: or.sendOnCanceled,
