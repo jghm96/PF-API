@@ -28,7 +28,7 @@ signUp.post("/", async (req, res) => {
                 res.status(490).json({errorType:'SignUp', errorCode:'1010' , errorMessage: 'email existente'});
         }
         else{
-          const user = await User.create({id,username,password: cryptPassword,email});
+            const user = await User.create({id,username,password: cryptPassword,email,theme: null, image: ''});
          let symbol = await Symbol.findByPk(3)
             let transactionFree = await Transaction.create({withdraw: 0, deposit:1000000})
             await user.addTransaction(transactionFree)

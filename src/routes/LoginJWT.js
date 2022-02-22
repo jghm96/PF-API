@@ -17,7 +17,7 @@ login.post('/', async(req, res) => {
     const passwordCorrect = user === null ? false : await bcrypt.compare(password, user.toJSON().password)
     if(!passwordCorrect) return res.status(401).json({errorType:'userError', errorCode:'1110' , errorMessage: 'Invalid user or password'})
     const tokenUser=userToken(user.toJSON().id, user.toJSON().username)
-    res.json({username : user.toJSON().username, email: user.toJSON().email, tokenUser})
+    res.json({username : user.toJSON().username, email: user.toJSON().email, image: user.toJSON().image, theme: user.toJSON().theme, tokenUser})
   }catch(err){
     res.status(500).json(err)
   }

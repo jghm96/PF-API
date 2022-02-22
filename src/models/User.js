@@ -20,6 +20,14 @@ module.exports = (sequelize) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
+    image: {
+      type: DataTypes.STRING,
+      allowNull: true,  
+    },
+    theme:{
+      type: DataTypes.ENUM('dark','light'),
+      allowNull: true,
+    }
     /*
     mobile: {
         type: DataTypes.STRING,
