@@ -25,8 +25,8 @@ module.exports = (sequelize) => {
       allowNull: true,  
     },
     theme:{
-      type: DataTypes.ENUM('dark','light'),
-      allowNull: true,
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
     }
     /*
     mobile: {
