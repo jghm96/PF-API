@@ -10,8 +10,8 @@ settings.post('/', isAuthenticated, async (req, res) => {
     const newPassword = password ? await bcrypt.hash(password, 10) : null
     await user.update({
       password: newPassword ? newPassword : user.toJSON().password,
-      theme: theme ? theme: '',
-      image: image ? image: '',
+      theme: theme ? theme: user.toJSON().theme,
+      image: image ? image: user.toJSON().image,
     })
     let userMod = user.toJSON()
     userMod = {
