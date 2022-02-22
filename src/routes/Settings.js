@@ -5,12 +5,14 @@ const bcrypt = require('bcrypt')
 
 settings.post('/', isAuthenticated, async (req, res) => {
   try{
-    let { image, theme, password } = req.body
+    let { image, theme, passwordChange, lastPassword, newPassword } = req.body
     const user = await User.findByPk(req.user.id)
-    const newPassword = password ? await bcrypt.hash(password, 10) : null
+    const match = await bcrypt.compare(lastPassword, user.toJSON().password)
+    if(passwordChange && !match) return res.status(404).json({errorType: 'errorUser', errorCode: '1150', errorMessage:'Password do not match with the registry'});
+    const newPassword2 = passwordChange ? await bcrypt.hash(newPassword, 10) : null
     await user.update({
-      password: newPassword ? newPassword : user.toJSON().password,
-      theme: theme ? theme: user.toJSON().theme,
+      password: newPassword2 ? newPassword2 : user.toJSON().password,
+      theme: theme !== user.toJSON().theme ? theme : user.toJSON().theme,
       image: image ? image: user.toJSON().image,
     })
     let userMod = user.toJSON()
