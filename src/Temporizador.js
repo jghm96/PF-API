@@ -15,7 +15,8 @@ module.exports = cron.schedule('* * * * *', async () => {
     subscriptionsReview.forEach(async s => {
         //let pair = response.data.filter(sub => sub.id === s.pairId)
         if(s.alertOnRise){
-            if(s.risePrice <= s.pair.price){
+            let precio = s.pair.symbol1Id === symbol1.id ? s.pair.price : (1/s.pair.price) 
+            if(s.risePrice <= precio){
                 let alertOnRise = false;
                 let symbol1 = await Symbol.findByPk(s.symbol1Id)
                 let symbol2 = await Symbol.findByPk(s.symbol2Id)
@@ -43,7 +44,8 @@ module.exports = cron.schedule('* * * * *', async () => {
             }
         }
         if(s.alertOnFall){
-            if(s.fallPrice >= s.pair.price ){
+            let precio = s.pair.symbol1Id === symbol1.id ? s.pair.price : (1/s.pair.price)
+            if(s.fallPrice >= precio ){
                 let alertOnFall= false;
                 let symbol1 = await Symbol.findByPk(s.symbol1Id)
                 let symbol2 = await Symbol.findByPk(s.symbol2Id)
