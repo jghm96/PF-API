@@ -55,7 +55,7 @@ module.exports = cron.schedule('* * * * *', async () => {
         order =  await executeOrder(orders[x].userId, orders[x].id)
       }else if(ordersT[x].marketOrder){
         await orders[x].update({
-          status: 3,
+          status: 2,
           sendOnPending:false,
           sendOnCanceled:true,
         })
