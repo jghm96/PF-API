@@ -4,6 +4,7 @@ const executeOrder = require('./ExecuteOrder')
 const { Order, Pair} = require('./db')
 const axios = require('axios')
 
+
 module.exports = cron.schedule('* * * * *', async () => {
   try{
     const day = 82942504
@@ -33,18 +34,39 @@ module.exports = cron.schedule('* * * * *', async () => {
       },
       include:[{model: Pair}]
     })
-  
-    await orders.forEach(async o => {
-      const balance = await getBalance(o.userId, o.idSymbolToSell)
+    ordersT = orders.map( o => o.toJSON() )
+    /*orders.forEach(async (o) => {*/
+      /*const balance = await getBalance(o.userId, o.idSymbolToSell)*/
+      /*let order;*/
+      /*let amountTotal = o.idSymbolToSell === o.pair.symbol1Id ? o.amount*(1/o.pair.price) : o.amount*o.pair.price*/
+      /*if(!o.buyOrder && balance.balance >= o.amount){*/
+        /*order =  await executeOrder(o.userId, o.id)*/
+      /*}else if(o.buyOrder && balance.balance >= amountTotal){*/
+        /*order =  await executeOrder(o.userId, o.id)*/
+      /*}*/
+    /*})*/
+    for(let x=0; x < orders.length; x++){
+      const balance = await getBalance(ordersT[x].userId, ordersT[x].idSymbolToSell)
       let order;
-      let amountTotal = o.idSymbolToSell === o.pair.symbol1Id ? o.amount*(1/o.pair.price) : o.amount*o.pair.price
-      if(!o.buyOrder && balance.balance >= o.amount){
-        order =  await executeOrder(o.userId, o.id)
-      }else if(o.buyOrder && balance.balance >= amountTotal){
-        order =  await executeOrder(o.userId, o.id)
+      let amountTotal = ordersT[x].idSymbolToSell === ordersT[x].pair.symbol1Id ? ordersT[x].amount*(1/ordersT[x].pair.price) : ordersT[x].amount*ordersT[x].pair.price
+      if(!ordersT[x].buyOrder && balance.balance >= ordersT[x].amount){
+        order =  await executeOrder(ordersT[x].userId, orders[x].id)
+      }else if(ordersT[x].buyOrder && balance.balance >= amountTotal){
+        order =  await executeOrder(orders[x].userId, orders[x].id)
+      }else if(ordersT[x].marketOrder){
+        await orders[x].update({
+          status: 3,
+          sendOnPending:false,
+          sendOnCanceled:true,
+        })
       }
-    })
+  }
   }catch(err){
     console.log(err)
   }
 })
+
+
+
+
+//module.exports = executeOrder
