@@ -81,11 +81,12 @@ portfolio.get("/", isAuthenticated, async (req, res) => { // Permite ver el esta
                     }
                 )
             })
+            arrayOfHappiness = arrayOfHappiness.filter(s => s.balance > 0)
             res.json(arrayOfHappiness);
         }
         // Current Balance da cuenta del estado actual de la cuenta bajo todos los simbolos disponibles en la wallet.
     } catch {
         res.status(500).json({ 'message': 'Something was wrong.' });
-    }});
+}});
 
 module.exports = portfolio
